@@ -3,74 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Responsibility & Privilege Ladder</title>
-  <link rel="stylesheet" href="styles.css">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <title>Responsibility Ladder</title>
+  <style>
+    .list-item { padding: 8px; margin: 4px; border-radius: 4px; }
+    .mastered { background-color: #d4edda; }
+    .todo { background-color: #f8d7da; }
+    #app { max-width: 800px; margin: 0 auto; padding: 20px; }
+    h2 { margin-top: 20px; }
+  </style>
 </head>
 <body>
-  <div class="background"></div>
-  <header>
-    <h1>Responsibility & Privilege Ladder</h1>
-    <div class="user-profile">
-      <span id="userEmail" class="user-email"></span>
-      <button id="logoutBtn" class="logout-btn" style="display:none" aria-label="Log out"><i class="fas fa-sign-out-alt"></i> Logout</button>
-    </div>
-  </header>
-
-  <div class="kid-bar" id="kidBar" style="display:none">
-    <label for="kidSelect">Kid:</label>
-    <select id="kidSelect" aria-label="Select kid profile"></select>
-    <button id="addKidBtn" aria-label="Add new kid"><i class="fas fa-plus"></i> Add</button>
-    <button id="renameKidBtn" aria-label="Rename current kid"><i class="fas fa-edit"></i> Rename</button>
-    <button id="deleteKidBtn" aria-label="Delete current kid"><i class="fas fa-trash"></i> Delete</button>
-    <button id="undoBtn" disabled aria-label="Undo last action"><i class="fas fa-undo"></i> Undo</button>
-    <button id="redoBtn" disabled aria-label="Redo last action"><i class="fas fa-redo"></i> Redo</button>
-    <button id="exportBtn" class="file-btn" aria-label="Export JSON data"><i class="fas fa-download"></i> Export</button>
-    <button id="importBtn" class="file-btn" aria-label="Import JSON data"><i class="fas fa-upload"></i> Import</button>
-    <input type="file" id="fileInput" accept="application/json" style="display:none" aria-hidden="true" />
+  <div id="app">
+    <h1>Responsibility Ladder</h1>
+    <h2>Mastered Responsibilities</h2>
+    <ul id="mastered-list"></ul>
+    <h2>To-Do Responsibilities</h2>
+    <ul id="todo-list"></ul>
   </div>
-
-  <div id="notifications" class="notifications" aria-live="polite"></div>
-
-  <div id="board" class="board" style="display:none"></div>
-
-  <footer style="display:none">
-    Drag items between tiers or use "Move" on mobile. Double-click to edit/delete. Check to master.
-  </footer>
-
-  <div id="loginModal" class="modal">
-    <div class="modal-content">
-      <h2>Login / Register</h2>
-      <div class="login-form">
-        <label for="emailInput">Email</label>
-        <input id="emailInput" type="email" aria-describedby="emailInputDesc" />
-        <div id="emailInputDesc" class="sr-only">Enter your email address.</div>
-        <label for="passwordInput">Password</label>
-        <input id="passwordInput" type="password" aria-describedby="passwordInputDesc" />
-        <div id="passwordInputDesc" class="sr-only">Enter your password, at least 6 characters.</div>
-        <div class="login-actions">
-          <button id="loginBtn" aria-label="Log in with email and password">Login</button>
-          <button id="registerBtn" aria-label="Register with email and password">Register</button>
-          <button id="googleBtn" aria-label="Sign in with Google"><i class="fab fa-google"></i> Google Sign-In</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div id="modal" class="modal">
-    <div class="modal-content">
-      <label for="editInput">Edit item</label>
-      <input id="editInput" type="text" maxlength="50" aria-describedby="editInputDesc" />
-      <div id="editInputDesc" class="sr-only">Enter text to edit the item, max 50 characters, no special characters.</div>
-      <div class="actions">
-        <button id="saveBtn" aria-label="Save changes"><i class="fas fa-save"></i> Save</button>
-        <button id="deleteBtn" aria-label="Delete item"><i class="fas fa-trash"></i> Delete</button>
-        <button id="cancelBtn" aria-label="Cancel editing"><i class="fas fa-times"></i> Cancel</button>
-      </div>
-    </div>
-  </div>
-
   <script type="module" src="script.js"></script>
 </body>
 </html>

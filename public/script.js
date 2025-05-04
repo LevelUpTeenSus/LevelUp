@@ -1,26 +1,79 @@
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, signOut, GoogleAuthProvider } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-import { getFirestore, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { getFirestore, doc, getDoc, setDoc, collection, getDocs } from 'firebase/firestore';
+import { app } from './firebaseConfig';
+
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// Sample function to fetch user data (modify based on your Firestore structure)
+async function getUserData(userId) {
+  try {
+    const userDoc = await getDocs(collection(db, `users/${userId}/profile`));
+    if (!userDoc.empty) {
+      return userDoc.docs[0].data();
+    }
+    return null;
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    return null;
+  }
+}
+
+// Check if an item is in the mastered set
+function masteredSet(item, userData) {
+  if (!userData || !userData.mastered) {
+    console.warn('userData or mastered field is missing');
+    return false;
+  }
+  return userData.mastered.includes(item);
+}
+
+// Process an item for a list
+function processItem(data, userData, listType) {
+  if (masteredSet(data.id, userData)) {
+    console.log(`Item ${data.id} is mastered`);
+  } else {
+    console.log(`Item ${data.id} is not mastered`);
+  }
+}
+
+// Populate lists with items
+async function populateListsWithUserData(userData) {
+  try {
+    const itemsSnapshot = await getDocs(collection(db, 'items'));
+    const lists = { todo: [], mastered: [] };
+    itemsSnapshot.forEach((doc) => {
+      const data = doc.data();
+      processItem(data, userData, 'todo');
+    });
+    console.log('Lists populated:', lists);
+  } catch (error) {
+    console.error('Error populating lists:', error);
+  }
+}
+
+// Build the board using stored data and user-specific data
+async function buildBoardWithUserData(userId) {
+  try {
+    const userData = await getUserData(userId);
+    if (!userData) {
+      console.warn('No user data found for user:', userId);
+      return;
+    }
+    await populateListsWithUserData(userData);
+    buildBoard(); // existing function to render tiers
+  } catch (error) {
+    console.error('Error building board with user data:', error);
+  }
+}
+
+// Override init to pass userId into our new buildBoardWithUserData
+function init(userId) {
+  buildBoardWithUserData(userId);
+}
 // Optional: Uncomment if using Analytics
 // import { getAnalytics } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js';
 
-// Firebase configuration (temporary hardcoded values)
-const firebaseConfig = {
-  apiKey: "AIzaSyCF19jDxvSUjyd5R8N9_FJ0-DzyBQAYs1g",
-  authDomain: "levelupteensus.firebaseapp.com",
-  projectId: "levelupteensus",
-  storageBucket: "levelupteensus.firebasestorage.app",
-  messagingSenderId: "626925593956",
-  appId: "1:626925593956:web:956e7503936e3537814671",
-  measurementId: "G-NGBQG34RKB"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-// Optional: Uncomment if using Analytics
-// const analytics = getAnalytics(app);
 
 // Config & Defaults
 const TIER_CONFIG = [
@@ -79,22 +132,10 @@ const footer = document.querySelector('footer');
 // Authentication
 onAuthStateChanged(auth, (user) => {
   if (user) {
-    userEmail.textContent = user.email;
-    logoutBtn.style.display = 'flex';
-    loginModal.style.display = 'none';
-    kidBar.style.display = 'flex';
-    board.style.display = 'flex';
-    footer.style.display = 'block';
-    loadStore(user.uid).then(() => init());
+    console.log('User signed in:', user.uid);
+    init(user.uid);
   } else {
-    userEmail.textContent = '';
-    logoutBtn.style.display = 'none';
-    loginModal.style.display = 'flex';
-    kidBar.style.display = 'none';
-    board.style.display = 'none';
-    footer.style.display = 'none';
-    store = null;
-    data = null;
+    console.log('No user signed in');
   }
 });
 
