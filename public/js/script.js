@@ -1,17 +1,25 @@
-// Firebase Config (Replace with your Firebase project config)
+// Import Firebase SDKs
+import { initializeApp } from 'firebase/app';
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, signOut, GoogleAuthProvider } from 'firebase/auth';
+import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
+import { getAnalytics } from 'firebase/analytics';
+
+// Firebase configuration using environment variables
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: process.env.FIREBASE_API_KEY,
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.FIREBASE_APP_ID,
+  measurementId: process.env.FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const analytics = getAnalytics(app);
 
 // Config & Defaults
 const TIER_CONFIG = [
@@ -68,7 +76,7 @@ const kidBar = document.getElementById('kidBar');
 const footer = document.querySelector('footer');
 
 // Authentication
-auth.onAuthStateChanged(user => {
+onAuthStateChanged(auth, (user) => {
   if (user) {
     userEmail.textContent = user.email;
     logoutBtn.style.display = 'flex';
@@ -94,7 +102,7 @@ loginBtn.onclick = async () => {
   const password = passwordInput.value.trim();
   if (!email || !password) return showNotification('Email and password are required', 'error');
   try {
-    await auth.signInWithEmailAndPassword(email, password);
+    await signInWithEmailAndPassword(auth, email, password);
     showNotification('Logged in successfully', 'success');
   } catch (err) {
     showNotification(err.message, 'error');
@@ -106,7 +114,7 @@ registerBtn.onclick = async () => {
   const password = passwordInput.value.trim();
   if (!email || !password) return showNotification('Email and password are required', 'error');
   try {
-    await auth.createUserWithEmailAndPassword(email, password);
+    await createUserWithEmailAndPassword(auth, email, password);
     showNotification('Registered successfully', 'success');
   } catch (err) {
     showNotification(err.message, 'error');
@@ -114,9 +122,9 @@ registerBtn.onclick = async () => {
 };
 
 googleBtn.onclick = async () => {
-  const provider = new firebase.auth.GoogleAuthProvider();
+  const provider = new GoogleAuthProvider();
   try {
-    await auth.signInWithPopup(provider);
+    await signInWithPopup(auth, provider);
     showNotification('Signed in with Google', 'success');
   } catch (err) {
     showNotification(err.message, 'error');
@@ -125,7 +133,7 @@ googleBtn.onclick = async () => {
 
 logoutBtn.onclick = async () => {
   try {
-    await auth.signOut();
+    await signOut(auth);
     showNotification('Logged out successfully', 'success');
   } catch (err) {
     showNotification(err.message, 'error');
@@ -135,9 +143,10 @@ logoutBtn.onclick = async () => {
 // Persistence Helpers
 async function loadStore(uid) {
   try {
-    const doc = await db.collection('users').doc(uid).get();
-    if (doc.exists) {
-      store = doc.data().store;
+    const userDocRef = doc(db, 'users', uid);
+    const docSnap = await getDoc(userDocRef);
+    if (docSnap.exists()) {
+      store = docSnap.data().store;
       Object.keys(store.profiles).forEach(kid => {
         store.mastered[kid] = Array.isArray(store.mastered[kid]) ? store.mastered[kid] : [];
       });
@@ -170,7 +179,7 @@ async function saveStore(action = null, uid = auth.currentUser?.uid) {
     updateUndoRedo();
   }
   try {
-    await db.collection('users').doc(uid).set({ store }, { merge: true });
+    await setDoc(doc(db, 'users', uid), { store }, { merge: true });
   } catch (e) {
     showNotification('Failed to save data', 'error');
   }
@@ -468,7 +477,7 @@ function item(text, category) {
 function moveItemMobile(li) {
   const text = li.querySelector('span').textContent;
   const category = li.dataset.category;
-  const sourceTier = li.closest('.tier').dataset.tier;
+  const sourceTier = li.closest('.tier').dataset оживать.tier;
   const tierOptions = TIER_CONFIG.map(t => `Tier ${t.id}: ${t.name}`).join('\n');
   const targetTierName = prompt(`Move "${text}" to which tier?\n${tierOptions}`);
   if (!targetTierName) return;
@@ -491,7 +500,7 @@ function moveItemMobile(li) {
 // Modal
 let curLi = null;
 function editModal(li) {
-  curLi = li;
+  comethisLi = li;
   editInput.value = li.querySelector('span').textContent.trim();
   modal.style.display = 'flex';
   editInput.focus();
@@ -562,7 +571,7 @@ function attachEvents() {
       ul.ondrop = e => drop(e, ul);
     }
   });
-  document.querySelectorAll('.add-btn').forEach(btn => {
+  document.querySelectorAll('add-btn').forEach(btn => {
     btn.onclick = addItem;
   });
 }
