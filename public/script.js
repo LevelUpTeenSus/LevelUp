@@ -1,9 +1,42 @@
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, doc, getDoc, setDoc, collection, getDocs } from 'firebase/firestore';
+// public/script.js
+
+import { 
+  getAuth, 
+  onAuthStateChanged, 
+  connectAuthEmulator,
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signInWithPopup, 
+  signOut, 
+  GoogleAuthProvider 
+} from 'firebase/auth';
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  collection,
+  getDocs,
+  connectFirestoreEmulator,
+  setLogLevel
+} from 'firebase/firestore';
 import { app } from './firebaseConfig';
 
+// Initialize Auth & Firestore
 const auth = getAuth(app);
 const db = getFirestore(app);
+
+// — Enable verbose Firestore logging to diagnose “Listen” RPC calls
+setLogLevel('debug');
+
+// — If running locally, point Auth & Firestore at your emulators
+if (window.location.hostname === 'localhost') {
+  connectAuthEmulator(auth, 'http://localhost:9099');
+  connectFirestoreEmulator(db, 'localhost', 8080);
+}
+
+// …the rest of your existing code follows…
+
 
 // Sample function to fetch user data (modify based on your Firestore structure)
 async function getUserData(userId) {
@@ -67,8 +100,13 @@ async function buildBoardWithUserData(userId) {
   }
 }
 
-// Override init to pass userId into our new buildBoardWithUserData
+// New init function that sets up kid bar, media query, and calls buildBoardWithUserData
 function init(userId) {
+  initKidBar();
+  window.matchMedia('(max-width: 768px)').addEventListener('change', (e) => {
+    isMobile = e.matches;
+    buildBoard();
+  });
   buildBoardWithUserData(userId);
 }
 // Optional: Uncomment if using Analytics
@@ -225,16 +263,6 @@ async function saveStore(action = null, uid = auth.currentUser?.uid) {
   } catch (e) {
     showNotification('Failed to save data', 'error');
   }
-}
-
-// Initialize
-function init() {
-  initKidBar();
-  buildBoard();
-  window.matchMedia('(max-width: 768px)').addEventListener('change', (e) => {
-    isMobile = e.matches;
-    buildBoard();
-  });
 }
 
 // Undo/Redo
@@ -453,9 +481,13 @@ function populateLists() {
 }
 
 // Item Creation & Mastery
-function masteredSet() {
+// Local mastered set helper (based on store.mastered)
+function getMasteredSet() {
   store.mastered = store.mastered || {};
-  store.mastered[store.currentKid] = Array.isArray(store.mastered[store.currentKid]) ? store.mastered[kid] : [];
+  // Ensure currentKid entry is an array
+  store.mastered[store.currentKid] = Array.isArray(store.mastered[store.currentKid])
+    ? store.mastered[store.currentKid]
+    : [];
   return new Set(store.mastered[store.currentKid]);
 }
 
@@ -473,12 +505,12 @@ function item(text, category) {
     cb.type = 'checkbox';
     cb.id = `cb-${text}-${category}`;
     cb.setAttribute('aria-label', `Mark ${text} as mastered`);
-    const m = masteredSet();
+    const m = getMasteredSet();
     cb.checked = m.has(text);
     li.classList.toggle('mastered', cb.checked);
     cb.onchange = () => {
       li.classList.toggle('mastered', cb.checked);
-      const mastered = masteredSet();
+      const mastered = getMasteredSet();
       cb.checked ? mastered.add(text) : mastered.delete(text);
       saveMastered(mastered);
       saveStore('master');
@@ -593,7 +625,7 @@ modal.onclick = e => { if (e.target === modal) closeModal(); };
 window.onkeydown = e => { if (e.key === 'Escape') closeModal(); };
 
 function renameMastered(oldText, newText) {
-  const m = masteredSet();
+  const m = getMasteredSet();
   if (m.has(oldText)) {
     m.delete(oldText);
     m.add(newText);

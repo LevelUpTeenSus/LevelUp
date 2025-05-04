@@ -2,24 +2,23 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="favicon.ico">
   <title>Responsibility Ladder</title>
-  <style>
-    .list-item { padding: 8px; margin: 4px; border-radius: 4px; }
-    .mastered { background-color: #d4edda; }
-    .todo { background-color: #f8d7da; }
-    #app { max-width: 800px; margin: 0 auto; padding: 20px; }
-    h2 { margin-top: 20px; }
-  </style>
 </head>
 <body>
   <div id="app">
     <h1>Responsibility Ladder</h1>
     <h2>Mastered Responsibilities</h2>
-    <ul id="mastered-list"></ul>
+    <ul id="mastered-list" aria-live="polite">
+      <li class="loading">Loading mastered responsibilities...</li>
+    </ul>
     <h2>To-Do Responsibilities</h2>
-    <ul id="todo-list"></ul>
+    <ul id="todo-list" aria-live="polite">
+      <li class="loading">Loading to-do responsibilities...</li>
+    </ul>
   </div>
-  <script type="module" src="script.js"></script>
+  <script type="module" src="script.js" defer></script>
 </body>
 </html>
