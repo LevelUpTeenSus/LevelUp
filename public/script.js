@@ -20,7 +20,7 @@ import {
   connectFirestoreEmulator,
   setLogLevel
 } from 'firebase/firestore';
-import { app } from './firebaseConfig';
+import { app } from './firebaseConfig.js';
 
 // Initialize Auth & Firestore
 const auth = getAuth(app);
@@ -100,13 +100,9 @@ async function buildBoardWithUserData(userId) {
   }
 }
 
-// New init function that sets up kid bar, media query, and calls buildBoardWithUserData
+// New init function that sets up kid bar and calls buildBoardWithUserData
 function init(userId) {
   initKidBar();
-  window.matchMedia('(max-width: 768px)').addEventListener('change', (e) => {
-    isMobile = e.matches;
-    buildBoard();
-  });
   buildBoardWithUserData(userId);
 }
 // Optional: Uncomment if using Analytics
@@ -138,6 +134,13 @@ let data = null;
 let actionHistory = [];
 let actionHistoryIndex = -1;
 let isMobile = window.matchMedia('(max-width: 768px)').matches;
+
+// Update isMobile on viewport changes
+const mediaQuery = window.matchMedia('(max-width: 768px)');
+mediaQuery.addEventListener('change', (e) => {
+  isMobile = e.matches;
+  buildBoard();
+});
 
 // DOM Refs
 const board = document.getElementById('board');
@@ -458,7 +461,7 @@ function buildBoard() {
       </div>`;
     board.appendChild(col);
   });
-  populateLists();
+  populateLocalLists();
   attachEvents();
   updateAllTiers();
 }
@@ -472,7 +475,7 @@ function section(lbl, cat, tierId) {
     </div>`;
 }
 
-function populateLists() {
+function populateLocalLists() {
   TIER_CONFIG.forEach(({ id }) => ['responsibilities', 'privileges'].forEach(cat => {
     const ul = document.getElementById(`tier${id}-${cat.slice(0, 4)}`);
     ul.innerHTML = '';
