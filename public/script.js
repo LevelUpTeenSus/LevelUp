@@ -1,25 +1,26 @@
-// Import Firebase SDKs
-import { initializeApp } from 'firebase/app';
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, signOut, GoogleAuthProvider } from 'firebase/auth';
-import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
-import { getAnalytics } from 'firebase/analytics';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, signOut, GoogleAuthProvider } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+import { getFirestore, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+// Optional: Uncomment if using Analytics
+// import { getAnalytics } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js';
 
-// Firebase configuration using environment variables
+// Firebase configuration (temporary hardcoded values)
 const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY,
-  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.FIREBASE_PROJECT_ID,
-  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.FIREBASE_APP_ID,
-  measurementId: process.env.FIREBASE_MEASUREMENT_ID
+  apiKey: "AIzaSyCF19jDxvSUjyd5R8N9_FJ0-DzyBQAYs1g",
+  authDomain: "levelupteensus.firebaseapp.com",
+  projectId: "levelupteensus",
+  storageBucket: "levelupteensus.firebasestorage.app",
+  messagingSenderId: "626925593956",
+  appId: "1:626925593956:web:956e7503936e3537814671",
+  measurementId: "G-NGBQG34RKB"
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const analytics = getAnalytics(app);
+// Optional: Uncomment if using Analytics
+// const analytics = getAnalytics(app);
 
 // Config & Defaults
 const TIER_CONFIG = [
@@ -413,7 +414,7 @@ function populateLists() {
 // Item Creation & Mastery
 function masteredSet() {
   store.mastered = store.mastered || {};
-  store.mastered[store.currentKid] = Array.isArray(store.mastered[store.currentKid]) ? store.mastered[store.currentKid] : [];
+  store.mastered[store.currentKid] = Array.isArray(store.mastered[store.currentKid]) ? store.mastered[kid] : [];
   return new Set(store.mastered[store.currentKid]);
 }
 
@@ -477,7 +478,7 @@ function item(text, category) {
 function moveItemMobile(li) {
   const text = li.querySelector('span').textContent;
   const category = li.dataset.category;
-  const sourceTier = li.closest('.tier').dataset оживать.tier;
+  const sourceTier = li.closest('.tier').dataset.tier;
   const tierOptions = TIER_CONFIG.map(t => `Tier ${t.id}: ${t.name}`).join('\n');
   const targetTierName = prompt(`Move "${text}" to which tier?\n${tierOptions}`);
   if (!targetTierName) return;
@@ -500,7 +501,7 @@ function moveItemMobile(li) {
 // Modal
 let curLi = null;
 function editModal(li) {
-  comethisLi = li;
+  curLi = li;
   editInput.value = li.querySelector('span').textContent.trim();
   modal.style.display = 'flex';
   editInput.focus();
@@ -571,7 +572,7 @@ function attachEvents() {
       ul.ondrop = e => drop(e, ul);
     }
   });
-  document.querySelectorAll('add-btn').forEach(btn => {
+  document.querySelectorAll('.add-btn').forEach(btn => {
     btn.onclick = addItem;
   });
 }

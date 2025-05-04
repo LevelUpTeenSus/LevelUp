@@ -7,8 +7,7 @@
   <link rel="stylesheet" href="styles.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-  
-  </head>
+</head>
 <body>
   <div class="background"></div>
   <header>
@@ -34,8 +33,7 @@
 
   <div id="notifications" class="notifications" aria-live="polite"></div>
 
-  <div id="board" class="board" style="display:none">
-    </div>
+  <div id="board" class="board" style="display:none"></div>
 
   <footer style="display:none">
     Drag items between tiers or use "Move" on mobile. Double-click to edit/delete. Check to master.
@@ -73,49 +71,6 @@
     </div>
   </div>
 
-  <script type="module">
-    // Import the functions you need from the SDKs
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-    // Optional: Only include Analytics if you actually use it
-    // import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
-
-    // --- IMPORTANT SECURITY WARNING ---
-    // Your web app's Firebase configuration is included below.
-    // While necessary for the SDK to work, ensure you have configured
-    // **Firebase Security Rules** for Authentication and Firestore Database
-    // to protect your data from unauthorized access.
-    // Do not rely on client-side code alone for security.
-    // Go to your Firebase project console -> Build -> Firestore Database -> Rules
-    // And Build -> Authentication -> Settings (for authorized domains)
-    // ---
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyCF19jDxvSUjyd5R8N9_FJ0-DzyBQAYs1g", // Replace with your actual API key if different
-      authDomain: "levelupteensus.firebaseapp.com",
-      projectId: "levelupteensus",
-      storageBucket: "levelupteensus.firebasestorage.app", // Ensure this matches your setup
-      messagingSenderId: "626925593956",
-      appId: "1:626925593956:web:956e7503936e3537814671",
-      measurementId: "G-NGBQG34RKB" // Optional: Remove if not using Analytics
-    };
-
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-
-    // Initialize Firebase Services
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    // Optional: Only initialize Analytics if you use it
-    // const analytics = getAnalytics(app);
-
-    // Export instances for use in other modules (like script.js)
-    export { app, auth, db };
-
-  </script>
-
   <script type="module" src="script.js"></script>
-
 </body>
 </html>
