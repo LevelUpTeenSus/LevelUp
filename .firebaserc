@@ -1,5 +1,21 @@
-{
-  "projects": {
-    "default": "levelupteensus"
-  }
-}
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyCF19jDxvSUjyd5R8N9_FJ0-DzyBQAYs1g",
+  authDomain: "levelupteensus.firebaseapp.com",
+  projectId: "levelupteensus",
+  storageBucket: "levelupteensus.firebasestorage.app",
+  messagingSenderId: "626925593956",
+  appId: "1:626925593956:web:956e7503936e3537814671",
+  measurementId: "G-NGBQG34RKB"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
