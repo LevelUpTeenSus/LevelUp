@@ -1,0 +1,51 @@
+type User @table {
+  userId: UUID! @unique
+  userType: String!
+  displayName: String
+  email: String
+  photoURL: String
+  createdAt: Timestamp!
+}
+
+type Tier @table {
+  name: String!
+  order: Int!
+  description: String
+  mastered: Boolean
+  masteredAt: Timestamp
+  createdAt: Timestamp!
+  parent: User!
+  # responsibilities: [Responsibility!]! # Add this relationship. Not supported
+  masteryMeter: Float # Derived field, calculated based on mastered responsibilities
+}
+
+type Responsibility @table {
+  description: String!
+  targetCount: Int!
+  consecutiveSuccessesRequired: Int!
+  notes: String
+  mastered: Boolean
+  masteredAt: Timestamp
+  tier: Tier!
+}
+
+type Reward @table {
+  description: String!
+  criteria: String!
+  tier: Tier!
+}
+
+type BehaviorLog @table {
+  completedAt: Timestamp!
+  approved: Boolean
+  success: Boolean
+  teenager: User!
+  responsibility: Responsibility!
+}
+
+type SubscriptionType @table {
+  planName: String!
+  startDate: Date!
+  endDate: Date
+  parent: User!
+}

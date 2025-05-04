@@ -1,0 +1,15 @@
+{
+  "name": "responsibility-ladder",
+  "version": "1.0.0",
+  "description": "Responsibility & Privilege Ladder with user authentication",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@firebasegen/default-connector": "file:dataconnect-generated/js/default-connector",
+    "express": "^4.18.2"
+  },
+  "author": "",
+  "license": "ISC"
+}

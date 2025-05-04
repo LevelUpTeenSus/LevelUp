@@ -1,0 +1,120 @@
+{
+  "currentKid": "Archer",
+  "profiles": {
+    "Archer": {
+      "1": {
+        "responsibilities": [
+          "Shower daily",
+          "Brush teeth 2×",
+          "Put away shoes/coats"
+        ],
+        "privileges": [
+          "Allowance",
+          "1h screen time",
+          "Choose family movie"
+        ]
+      },
+      "2": {
+        "responsibilities": [
+          "Pack own lunch"
+        ],
+        "privileges": [
+          "Smartphone",
+          "Decorate room"
+        ]
+      },
+      "3": {
+        "responsibilities": [
+          "Take out trash",
+          "Feed pet"
+        ],
+        "privileges": [
+          "Video games",
+          "Friend outings"
+        ]
+      },
+      "4": {
+        "responsibilities": [
+          "Maintain GPA B",
+          "Manage homework"
+        ],
+        "privileges": [
+          "Laptop",
+          "Later curfew"
+        ]
+      },
+      "5": {
+        "responsibilities": [
+          "Budget money",
+          "Safe driving"
+        ],
+        "privileges": [
+          "Car access",
+          "Flexible curfew"
+        ]
+      }
+    },
+    "Scout": {
+      "1": {
+        "responsibilities": [
+          "Shower daily",
+          "Brush teeth 2×",
+          "Put away shoes/coats"
+        ],
+        "privileges": [
+          "Allowance",
+          "1h screen time",
+          "Choose family movie"
+        ]
+      },
+      "2": {
+        "responsibilities": [
+          "Keep bedroom tidy",
+          "Pack own lunch"
+        ],
+        "privileges": [
+          "Smartphone",
+          "Decorate room"
+        ]
+      },
+      "3": {
+        "responsibilities": [
+          "Take out trash",
+          "Feed pet"
+        ],
+        "privileges": [
+          "Video games",
+          "Friend outings"
+        ]
+      },
+      "4": {
+        "responsibilities": [
+          "Maintain GPA B",
+          "Manage homework"
+        ],
+        "privileges": [
+          "Laptop",
+          "Later curfew"
+        ]
+      },
+      "5": {
+        "responsibilities": [
+          "Budget money",
+          "Safe driving"
+        ],
+        "privileges": [
+          "Car access",
+          "Flexible curfew"
+        ]
+      }
+    }
+  },
+  "mastered": {
+    "Archer": [
+      "Shower daily",
+      "Brush teeth 2×",
+      "Put away shoes/coats"
+    ],
+    "Scout": []
+  }
+}
