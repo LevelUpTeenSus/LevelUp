@@ -746,3 +746,23 @@ footer {
     padding: 1.2rem;
   }
 }
+/* Layout for tier columns */
+.tiers-container {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin: 1rem 0;
+}
+.tiers-container .tier {
+  flex: 1;
+}
+
+/* Bottom control bar layout */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  align-items: center;
+  justify-content: center;
+}

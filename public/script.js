@@ -478,6 +478,11 @@ function buildBoard() {
   `;
   board.appendChild(levelSection);
 
+  // Container for tiers
+  const tiersContainer = document.createElement('div');
+  tiersContainer.className = 'tiers-container';
+  board.appendChild(tiersContainer);
+
   // Build the tier sections
   TIER_CONFIG.forEach(tier => {
     const col = document.createElement('div');
@@ -491,7 +496,7 @@ function buildBoard() {
         ${section('Responsibilities', 'responsibilities', tier.id)}
         ${section('Privileges', 'privileges', tier.id)}
       </div>`;
-    board.appendChild(col);
+    tiersContainer.appendChild(col);
   });
 
   // Removed: populateLocalLists();
@@ -512,6 +517,8 @@ function buildBoard() {
     exportBtn,
     logoutBtn
   ].forEach(btn => controls.appendChild(btn));
+  // Show logged-in user email at bottom
+  controls.appendChild(userEmail);
   board.appendChild(controls);
 }
 
