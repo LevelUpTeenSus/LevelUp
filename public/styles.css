@@ -418,7 +418,7 @@ li:focus {
 }
 
 /* Control panel buttons */
-#controls button {
+.controls button {
   padding: 0.6rem 1.2rem;
   font-family: 'Poppins', sans-serif;
   font-size: 1rem;
@@ -432,13 +432,13 @@ li:focus {
   margin-right: 0.5rem;
 }
 
-#controls button:hover:not(:disabled) {
+.controls button:hover:not(:disabled) {
   transform: translateY(-3px);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
   background: linear-gradient(45deg, #3b82f6, #7c3aed);
 }
 
-#controls button:disabled {
+.controls button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
