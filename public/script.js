@@ -852,12 +852,6 @@ async function init(userId) {
 
 async function buildBoardWithUserData(userId) {
   try {
-    const userData = await getUserData(userId);
-    if (!userData) {
-      showNotification('No user data found', 'error');
-      return;
-    }
-    await populateListsWithUserData(userData);
     buildBoard();
   } catch (error) {
     console.error('Error building board with user data:', error);
