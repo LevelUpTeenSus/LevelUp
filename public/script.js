@@ -148,6 +148,8 @@ googleBtn.onclick = async () => {
 
 logoutBtn.onclick = async () => {
   try {
+    // Persist any unsaved changes before logging out
+    await saveStore();
     await signOut(auth);
     showNotification('Logged out successfully', 'success');
   } catch (err) {
