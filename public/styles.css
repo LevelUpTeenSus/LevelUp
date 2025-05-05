@@ -147,10 +147,12 @@ h1 {
 }
 
 /* Responsive layout for tiers */
+/* .tier sizing for board layout. Will be overridden for .tiers-container below */
 .tier {
   flex: 1 1 calc(20% - 20px);
   box-sizing: border-box;
   margin: 10px;
+  /* width: 320px; */ /* Commented out so .tiers-container sizing applies */
 }
 
 /* Sections */
@@ -186,7 +188,7 @@ h1 {
   background: linear-gradient(135deg, #ffffff, #f9fafb);
   border-radius: 16px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-  width: 320px;
+  /* width: 320px; */ /* Commented out so .tiers-container sizing applies */
   display: flex;
   flex-direction: column;
   transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
@@ -749,12 +751,15 @@ footer {
 /* Layout for tier columns */
 .tiers-container {
   display: flex;
-  gap: 1rem;
+  gap: 0.5rem;
   justify-content: space-between;
-  margin: 1rem 0;
+  margin: 0.5rem 0;
+  flex-wrap: wrap;
 }
 .tiers-container .tier {
-  flex: 1;
+  flex: 1 1 20%;
+  max-width: 20%;
+  margin: 0;
 }
 
 /* Bottom control bar layout */
