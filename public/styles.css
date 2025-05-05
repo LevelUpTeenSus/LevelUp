@@ -59,8 +59,64 @@ h1 {
   color: #fff;
 }
 
+/* Kid Bar Buttons Standardized */
+.kid-bar button {
+  padding: 0.6rem 1.2rem;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(45deg, #3b82f6, #6366f1);
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
+  margin: 0.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.kid-bar button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(45deg, #6366f1, #3b82f6);
+}
+
+.kid-bar button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #d1d5db;
+  color: #6b7280;
+}
+
+/* Kid Bar Action Buttons */
+/* Add Kid */
+#addKidBtn {
+  background: linear-gradient(45deg, #10b981, #059669);
+}
+#addKidBtn:hover {
+  background: linear-gradient(45deg, #059669, #10b981);
+}
+
+/* Rename Kid */
+#renameKidBtn {
+  background: linear-gradient(45deg, #fbbf24, #f59e0b);
+}
+#renameKidBtn:hover {
+  background: linear-gradient(45deg, #f59e0b, #fbbf24);
+}
+
+/* Delete Kid */
+#deleteKidBtn {
+  background: linear-gradient(45deg, #ef4444, #dc2626);
+}
+#deleteKidBtn:hover {
+  background: linear-gradient(45deg, #dc2626, #ef4444);
+}
+
 .logout-btn {
-  padding: 0.5rem 1.2rem;
+  padding: 0.6rem 1.2rem;
   font-family: 'Poppins', sans-serif;
   font-size: 1rem;
   font-weight: 600;
@@ -70,15 +126,17 @@ h1 {
   color: #fff;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 }
 
 .logout-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   background: linear-gradient(45deg, #dc2626, #ef4444);
+}
+
+.logout-btn:active {
+  transform: translateY(0);
+  box-shadow: none;
 }
 
 /* Kid Bar */
@@ -118,34 +176,6 @@ h1 {
   box-shadow: 0 0 8px rgba(124, 58, 237, 0.3);
 }
 
-.kid-bar button {
-  padding: 0.6rem 1.2rem;
-  font-family: 'Poppins', sans-serif;
-  font-size: 1.1rem;
-  font-weight: 600;
-  border: none;
-  border-radius: 10px;
-  background: linear-gradient(45deg, #7c3aed, #3b82f6);
-  color: #fff;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.kid-bar button:hover:not(:disabled) {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-  background: linear-gradient(45deg, #3b82f6, #7c3aed);
-}
-
-.kid-bar button:disabled {
-  background: #9ca3af;
-  color: #e5e7eb;
-  cursor: not-allowed;
-  transform: none;
-}
 
 .file-btn {
   background: linear-gradient(45deg, #10b981, #059669);
