@@ -444,19 +444,22 @@ async function populateListsWithUserData(userData) {
 // Board Build
 function buildBoard() {
   board.innerHTML = '';
+  // Top header container
+  const topHeader = document.createElement('div');
+  topHeader.className = 'top-header';
   if (!data) {
     board.innerHTML = '<h1>LevelUp</h1><p>No data available. Please add some items.</p>';
     return;
   }
   const header = document.createElement('h1');
   header.textContent = 'LevelUp';
-  board.appendChild(header);
+  topHeader.appendChild(header);
 
   // Display selected child's name
   const childNameHeader = document.createElement('h2');
   childNameHeader.className = 'child-name';
   childNameHeader.textContent = store.currentKid;
-  board.appendChild(childNameHeader);
+  topHeader.appendChild(childNameHeader);
 
   // Current Level display
   const masteredSet = new Set(store.mastered[store.currentKid] || []);
@@ -477,7 +480,8 @@ function buildBoard() {
     <p>Next: Tier ${next} (${doneCount}/${nextCount} done)</p>
     <div class="progress-bar"><span style="width:${pct}%"></span></div>
   `;
-  board.appendChild(levelSection);
+  topHeader.appendChild(levelSection);
+  board.appendChild(topHeader);
 
   // Container for tiers
   const tiersContainer = document.createElement('div');
