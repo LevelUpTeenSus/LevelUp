@@ -1,5 +1,3 @@
-// public/script.js
-
 import { 
   getAuth, 
   onAuthStateChanged, 
@@ -26,88 +24,14 @@ import { app } from './firebaseConfig.js';
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// — Enable verbose Firestore logging to diagnose “Listen” RPC calls
+// Enable verbose Firestore logging
 setLogLevel('debug');
 
-// — If running locally, point Auth & Firestore at your emulators
+// Connect to emulators if running locally
 if (window.location.hostname === 'localhost') {
   connectAuthEmulator(auth, 'http://localhost:9099');
   connectFirestoreEmulator(db, 'localhost', 8080);
 }
-
-// …the rest of your existing code follows…
-
-
-// Sample function to fetch user data (modify based on your Firestore structure)
-async function getUserData(userId) {
-  try {
-    const userDoc = await getDocs(collection(db, `users/${userId}/profile`));
-    if (!userDoc.empty) {
-      return userDoc.docs[0].data();
-    }
-    return null;
-  } catch (error) {
-    console.error('Error fetching user data:', error);
-    return null;
-  }
-}
-
-// Check if an item is in the mastered set
-function masteredSet(item, userData) {
-  if (!userData || !userData.mastered) {
-    console.warn('userData or mastered field is missing');
-    return false;
-  }
-  return userData.mastered.includes(item);
-}
-
-// Process an item for a list
-function processItem(data, userData, listType) {
-  if (masteredSet(data.id, userData)) {
-    console.log(`Item ${data.id} is mastered`);
-  } else {
-    console.log(`Item ${data.id} is not mastered`);
-  }
-}
-
-// Populate lists with items
-async function populateListsWithUserData(userData) {
-  try {
-    const itemsSnapshot = await getDocs(collection(db, 'items'));
-    const lists = { todo: [], mastered: [] };
-    itemsSnapshot.forEach((doc) => {
-      const data = doc.data();
-      processItem(data, userData, 'todo');
-    });
-    console.log('Lists populated:', lists);
-  } catch (error) {
-    console.error('Error populating lists:', error);
-  }
-}
-
-// Build the board using stored data and user-specific data
-async function buildBoardWithUserData(userId) {
-  try {
-    const userData = await getUserData(userId);
-    if (!userData) {
-      console.warn('No user data found for user:', userId);
-      return;
-    }
-    await populateListsWithUserData(userData);
-    buildBoard(); // existing function to render tiers
-  } catch (error) {
-    console.error('Error building board with user data:', error);
-  }
-}
-
-// New init function that sets up kid bar and calls buildBoardWithUserData
-function init(userId) {
-  initKidBar();
-  buildBoardWithUserData(userId);
-}
-// Optional: Uncomment if using Analytics
-// import { getAnalytics } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js';
-
 
 // Config & Defaults
 const TIER_CONFIG = [
@@ -168,15 +92,22 @@ const googleBtn = document.getElementById('googleBtn');
 const userEmail = document.getElementById('userEmail');
 const logoutBtn = document.getElementById('logoutBtn');
 const kidBar = document.getElementById('kidBar');
-const footer = document.querySelector('footer');
+const todoList = document.getElementById('todo-list');
+const masteredList = document.getElementById('mastered-list');
 
 // Authentication
 onAuthStateChanged(auth, (user) => {
   if (user) {
-    console.log('User signed in:', user.uid);
+    loginModal.style.display = 'none';
+    kidBar.style.display = 'flex';
+    userEmail.textContent = user.email;
     init(user.uid);
   } else {
-    console.log('No user signed in');
+    loginModal.style.display = 'flex';
+    kidBar.style.display = 'none';
+    board.innerHTML = '<h1>Responsibility Ladder</h1><p>Please log in to continue.</p>';
+    todoList.innerHTML = '<li>Please log in to see your to-do responsibilities.</li>';
+    masteredList.innerHTML = '<li>Please log in to see your mastered responsibilities.</li>';
   }
 });
 
@@ -239,10 +170,11 @@ async function loadStore(uid) {
         profiles: { [DEFAULT_KID]: structuredClone(DEFAULT_DATA) },
         mastered: { [DEFAULT_KID]: [] }
       };
-      await saveStore(null, uid);
+      await setDoc(userDocRef, { store });
     }
     data = store.profiles[store.currentKid];
   } catch (e) {
+    console.error('loadStore error:', e);
     showNotification('Failed to load data', 'error');
     store = {
       currentKid: DEFAULT_KID,
@@ -341,6 +273,7 @@ function initKidBar() {
 }
 
 function refreshKidSelect() {
+  if (!kidSelect) return;
   kidSelect.innerHTML = '';
   Object.keys(store.profiles).forEach(name => kidSelect.add(new Option(name, name)));
 }
@@ -406,9 +339,10 @@ function exportJSON() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'levelup.json';
+  a.download = 'responsibility-ladder.json';
   a.click();
   URL.revokeObjectURL(url);
+  showNotification('Export successful', 'success');
 }
 
 function importJSON(e) {
@@ -444,9 +378,100 @@ function importJSON(e) {
   reader.readAsText(file);
 }
 
+// User Data and Lists
+async function getUserData(userId) {
+  try {
+    const userDocRef = doc(db, 'users', userId);
+    const userDoc = await getDoc(userDocRef);
+    return userDoc.exists() ? userDoc.data() : null;
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    showNotification('Failed to fetch user data', 'error');
+    return null;
+  }
+}
+
+function masteredSet(item, userData) {
+  if (!userData || !userData.store?.mastered?.[userData.store.currentKid]) {
+    console.warn('Invalid userData or mastered field');
+    return false;
+  }
+  return userData.store.mastered[userData.store.currentKid].includes(item);
+}
+
+async function populateListsWithUserData(userData) {
+  try {
+    let itemsSnapshot = await getDocs(collection(db, 'items'));
+    if (itemsSnapshot.empty) {
+      const sampleItems = [
+        { id: '1', name: 'Brush teeth' },
+        { id: '2', name: 'Make bed' },
+        { id: '3', name: 'Do homework' }
+      ];
+      for (const item of sampleItems) {
+        await setDoc(doc(db, 'items', item.id), item);
+      }
+      itemsSnapshot = await getDocs(collection(db, 'items'));
+    }
+    const lists = { todo: [], mastered: [] };
+    itemsSnapshot.forEach((doc) => {
+      const itemData = doc.data();
+      if (masteredSet(itemData.name, userData)) {
+        lists.mastered.push(itemData);
+      } else {
+        lists.todo.push(itemData);
+      }
+    });
+    const todoListEl = document.getElementById('todo-list');
+    const masteredListEl = document.getElementById('mastered-list');
+    todoListEl.innerHTML = lists.todo.length
+      ? lists.todo.map(item => `<li>${item.name}</li>`).join('')
+      : '<li>No to-do responsibilities.</li>';
+    masteredListEl.innerHTML = lists.mastered.length
+      ? lists.mastered.map(item => `<li>${item.name}</li>`).join('')
+      : '<li>No mastered responsibilities.</li>';
+  } catch (error) {
+    console.error('Error populating lists:', error);
+    showNotification('Failed to load lists', 'error');
+    const todoListEl = document.getElementById('todo-list');
+    const masteredListEl = document.getElementById('mastered-list');
+    todoListEl.innerHTML = '<li>Failed to load to-do responsibilities.</li>';
+    masteredListEl.innerHTML = '<li>Failed to load mastered responsibilities.</li>';
+  }
+}
+
 // Board Build
 function buildBoard() {
   board.innerHTML = '';
+  if (!data) {
+    board.innerHTML = '<h1>Responsibility Ladder</h1><p>No data available. Please add some responsibilities or privileges.</p>';
+    return;
+  }
+  const header = document.createElement('h1');
+  header.textContent = 'Responsibility Ladder';
+  board.appendChild(header);
+  
+  // Create top section for mastered items
+  const masteredSection = document.createElement('div');
+  masteredSection.className = 'section mastered-section';
+  masteredSection.innerHTML = '<h2>Mastered Responsibilities</h2>';
+  const masteredListEl = document.createElement('ul');
+  masteredListEl.id = 'mastered-list';
+  masteredListEl.setAttribute('aria-live', 'polite');
+  masteredSection.appendChild(masteredListEl);
+  board.appendChild(masteredSection);
+  
+  // Create section for to-do items
+  const todoSection = document.createElement('div');
+  todoSection.className = 'section todo-section';
+  todoSection.innerHTML = '<h2>To-Do Responsibilities</h2>';
+  const todoListEl = document.createElement('ul');
+  todoListEl.id = 'todo-list';
+  todoListEl.setAttribute('aria-live', 'polite');
+  todoSection.appendChild(todoListEl);
+  board.appendChild(todoSection);
+  
+  // Build the tier sections
   TIER_CONFIG.forEach(tier => {
     const col = document.createElement('div');
     col.className = 'tier';
@@ -461,11 +486,14 @@ function buildBoard() {
       </div>`;
     board.appendChild(col);
   });
+  
   populateLocalLists();
+  updateMasteredList();
   attachEvents();
   updateAllTiers();
 }
 
+// Helpers for building the board
 function section(lbl, cat, tierId) {
   return `
     <div>
@@ -478,16 +506,52 @@ function section(lbl, cat, tierId) {
 function populateLocalLists() {
   TIER_CONFIG.forEach(({ id }) => ['responsibilities', 'privileges'].forEach(cat => {
     const ul = document.getElementById(`tier${id}-${cat.slice(0, 4)}`);
+    if (!ul) return;
     ul.innerHTML = '';
     (data[id]?.[cat] || []).forEach(txt => ul.appendChild(item(txt, cat)));
   }));
 }
 
+// Update the mastered list from the store
+function updateMasteredList() {
+  const masteredListEl = document.getElementById('mastered-list');
+  if (!masteredListEl) return;
+  
+  const masteredItems = store.mastered[store.currentKid] || [];
+  
+  if (masteredItems.length === 0) {
+    masteredListEl.innerHTML = '<li>No mastered responsibilities yet.</li>';
+    return;
+  }
+  
+  masteredListEl.innerHTML = '';
+  masteredItems.forEach(text => {
+    const li = document.createElement('li');
+    li.className = 'mastered-item';
+    li.textContent = text;
+    
+    // Add button to move back to to-do
+    const undoBtn = document.createElement('button');
+    undoBtn.className = 'undo-mastered-btn';
+    undoBtn.textContent = 'Return to To-Do';
+    undoBtn.setAttribute('aria-label', `Return ${text} to to-do list`);
+    undoBtn.onclick = () => {
+      const mastered = getMasteredSet();
+      mastered.delete(text);
+      saveMastered(mastered);
+      saveStore('unmaster');
+      updateMasteredList();
+      updateAllTiers();
+    };
+    
+    li.appendChild(undoBtn);
+    masteredListEl.appendChild(li);
+  });
+}
+
 // Item Creation & Mastery
-// Local mastered set helper (based on store.mastered)
 function getMasteredSet() {
   store.mastered = store.mastered || {};
-  // Ensure currentKid entry is an array
   store.mastered[store.currentKid] = Array.isArray(store.mastered[store.currentKid])
     ? store.mastered[store.currentKid]
     : [];
@@ -517,6 +581,7 @@ function item(text, category) {
       cb.checked ? mastered.add(text) : mastered.delete(text);
       saveMastered(mastered);
       saveStore('master');
+      updateMasteredList();
       updateTier(li.closest('.tier'));
     };
     li.appendChild(cb);
@@ -603,6 +668,7 @@ saveBtn.onclick = () => {
   replaceText(oldText, newText, curLi.dataset.category);
   renameMastered(oldText, newText);
   saveStore('edit');
+  updateMasteredList();
   closeModal();
 };
 
@@ -611,13 +677,14 @@ deleteBtn.onclick = () => {
   const txt = curLi.querySelector('span').textContent;
   const tier = curLi.closest('.tier');
   removeText(txt, curLi.dataset.category);
-  const m = masteredSet();
+  const m = getMasteredSet();
   m.delete(txt);
   saveMastered(m);
   curLi.style.animation = 'fadeOut 0.3s ease';
   curLi.addEventListener('animationend', () => {
     curLi.remove();
     saveStore('delete');
+    updateMasteredList();
     updateTier(tier);
     closeModal();
   }, { once: true });
@@ -712,25 +779,60 @@ function updateAllTiers() {
 
 // Text Helpers
 function removeText(text, cat, sourceTier = null) {
-  const tiers = sourceTier ? [sourceTier] : Object.keys(data);
-  tiers.forEach(id => {
-    const idx = data[id][cat].indexOf(text);
-    if (idx > -1) data[id][cat].splice(idx, 1);
-  });
+  if (sourceTier) {
+    const tierData = data[sourceTier];
+    if (tierData && tierData[cat]) {
+      tierData[cat] = tierData[cat].filter(item => item !== text);
+      if (tierData[cat].length === 0) delete tierData[cat];
+    }
+  } else {
+    TIER_CONFIG.forEach(tier => {
+      const tierData = data[tier.id];
+      if (tierData && tierData[cat]) {
+        tierData[cat] = tierData[cat].filter(item => item !== text);
+        if (tierData[cat].length === 0) delete tierData[cat];
+      }
+    });
+  }
 }
 
 function addText(ul, text, cat) {
   const tierId = ul.id.match(/^tier(\d+)/)[1];
-  (data[tierId][cat] = data[tierId][cat] || []).push(text);
+  if (!data[tierId]) data[tierId] = {};
+  if (!data[tierId][cat]) data[tierId][cat] = [];
+  data[tierId][cat].push(text);
   ul.appendChild(item(text, cat));
 }
 
 function replaceText(oldText, newText, cat) {
-  for (const t in data) {
-    const idx = data[t][cat].indexOf(oldText);
-    if (idx > -1) {
-      data[t][cat][idx] = newText;
-      break;
+  TIER_CONFIG.forEach(tier => {
+    const tierData = data[tier.id];
+    if (tierData && tierData[cat]) {
+      const idx = tierData[cat].indexOf(oldText);
+      if (idx !== -1) tierData[cat][idx] = newText;
     }
+  });
+}
+
+// Initialization
+async function init(userId) {
+  await loadStore(userId);
+  initKidBar();
+  await buildBoardWithUserData(userId);
+}
+
+async function buildBoardWithUserData(userId) {
+  try {
+    const userData = await getUserData(userId);
+    if (!userData) {
+      showNotification('No user data found', 'error');
+      return;
+    }
+    await populateListsWithUserData(userData);
+    buildBoard();
+  } catch (error) {
+    console.error('Error building board with user data:', error);
+    showNotification('Failed to build board', 'error');
+    buildBoard();
   }
 }

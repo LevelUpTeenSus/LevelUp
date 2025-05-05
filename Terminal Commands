@@ -1,0 +1,12 @@
+
+git status
+
+git add .
+
+git commit -m "Commit Complete"
+
+git push origin main
+
+git pull orogon main
+
+firebase deploy --only hosting

@@ -1,5 +1,0 @@
-git config --global user.name "ResistancePilot"
-git config --global user.email "hollandevans@gmail.com"
-
-# Replace <URL> with the HTTPS or SSH URL from your GitHub repo page
-git remote add origin https://github.com/ResistancePilot/LevelUp.git

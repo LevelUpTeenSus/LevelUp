@@ -18,19 +18,22 @@
 </head>
 <body>
   <!-- Login Modal -->
-  <div id="loginModal" class="modal" style="display:none;">
+  <div id="loginModal" class="modal">
     <div class="modal-content">
-      <input id="emailInput" type="email" placeholder="Email" />
-      <input id="passwordInput" type="password" placeholder="Password" />
-      <button id="loginBtn">Login</button>
-      <button id="registerBtn">Register</button>
-      <button id="googleBtn">Sign in with Google</button>
+      <h2>Login or Register</h2>
+      <input id="emailInput" type="email" placeholder="Email" aria-label="Email" />
+      <input id="passwordInput" type="password" placeholder="Password" aria-label="Password" />
+      <div class="login-actions">
+        <button id="loginBtn">Login</button>
+        <button id="registerBtn">Register</button>
+        <button id="googleBtn">Sign in with Google</button>
+      </div>
     </div>
   </div>
 
   <!-- Kid Selector Bar -->
   <div id="kidBar" style="display:none;">
-    <select id="kidSelect"></select>
+    <select id="kidSelect" aria-label="Select Kid"></select>
     <button id="addKidBtn">Add Kid</button>
     <button id="renameKidBtn">Rename Kid</button>
     <button id="deleteKidBtn">Delete Kid</button>
@@ -50,13 +53,14 @@
       <li class="loading">Loading to-do responsibilities...</li>
     </ul>
   </div>
+
   <!-- Control Buttons -->
   <div id="controls">
     <button id="undoBtn" disabled>Undo</button>
     <button id="redoBtn" disabled>Redo</button>
     <button id="exportBtn">Export</button>
     <button id="importBtn">Import</button>
-    <input type="file" id="fileInput" style="display: none;" />
+    <input type="file" id="fileInput" style="display: none;" accept=".json" />
   </div>
 
   <!-- Notifications -->
@@ -65,13 +69,19 @@
   <!-- Edit Modal -->
   <div id="modal" class="modal" style="display:none;">
     <div class="modal-content">
-      <input id="editInput" type="text" />
-      <button id="saveBtn">Save</button>
-      <button id="deleteBtn">Delete</button>
-      <button id="cancelBtn">Cancel</button>
+      <input id="editInput" type="text" aria-label="Edit item" />
+      <div class="actions">
+        <button id="saveBtn">Save</button>
+        <button id="deleteBtn">Delete</button>
+        <button id="cancelBtn">Cancel</button>
+      </div>
     </div>
   </div>
-  <footer></footer>
-  <script type="module" src="script.js" defer></script>
+
+  <footer>
+    <p>&copy; 2025 Responsibility Ladder. All rights reserved.</p>
+  </footer>
+
+  <script type="module" src="script.js"></script>
 </body>
 </html>
