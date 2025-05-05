@@ -68,6 +68,7 @@ mediaQuery.addEventListener('change', (e) => {
 
 // DOM Refs
 const board = document.getElementById('board');
+board.classList.add('board');
 const kidSelect = document.getElementById('kidSelect');
 const addKidBtn = document.getElementById('addKidBtn');
 const renameKidBtn = document.getElementById('renameKidBtn');
