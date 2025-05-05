@@ -769,10 +769,13 @@ footer {
 /* Center title, child name & level bar at the top */
 .top-header {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  text-align: center;
-  margin-bottom: 1.5rem;
+  gap: 1.5rem;
+}
+.top-header h1,
+.top-header .child-name,
+.top-header .level-section {
+  margin: 0;
 }
 .top-header .child-name {
   font-size: 2.25rem;
