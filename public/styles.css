@@ -42,7 +42,7 @@ header {
 h1 {
   font-family: 'Poppins', sans-serif;
   font-weight: 700;
-  font-size: 2.2rem;
+  font-size: 2.8rem;
   color: #fff;
   text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
@@ -775,8 +775,13 @@ footer {
   margin-bottom: 1.5rem;
 }
 .top-header .child-name {
-  font-size: 1.5rem;
+  font-size: 2.25rem;
   margin: 0.5rem 0;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 .top-header .level-section {
   width: 100%;

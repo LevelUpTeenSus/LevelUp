@@ -489,7 +489,6 @@ function buildBoard() {
   levelSection.innerHTML = `
     <h2>Current Level: Tier ${highest}</h2>
     <p>Next: Tier ${next} (${doneCount}/${nextCount} done)</p>
-    <div class="progress-bar"><span style="width:${pct}%"></span></div>
   `;
   topHeader.appendChild(levelSection);
   board.appendChild(topHeader);
