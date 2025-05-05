@@ -17,7 +17,29 @@
   </script>
 </head>
 <body>
-  <div id="app">
+  <!-- Login Modal -->
+  <div id="loginModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <input id="emailInput" type="email" placeholder="Email" />
+      <input id="passwordInput" type="password" placeholder="Password" />
+      <button id="loginBtn">Login</button>
+      <button id="registerBtn">Register</button>
+      <button id="googleBtn">Sign in with Google</button>
+    </div>
+  </div>
+
+  <!-- Kid Selector Bar -->
+  <div id="kidBar" style="display:none;">
+    <select id="kidSelect"></select>
+    <button id="addKidBtn">Add Kid</button>
+    <button id="renameKidBtn">Rename Kid</button>
+    <button id="deleteKidBtn">Delete Kid</button>
+    <span id="userEmail"></span>
+    <button id="logoutBtn">Logout</button>
+  </div>
+
+  <!-- Main Board Container -->
+  <div id="board">
     <h1>Responsibility Ladder</h1>
     <h2>Mastered Responsibilities</h2>
     <ul id="mastered-list" aria-live="polite">
@@ -28,6 +50,28 @@
       <li class="loading">Loading to-do responsibilities...</li>
     </ul>
   </div>
+  <!-- Control Buttons -->
+  <div id="controls">
+    <button id="undoBtn" disabled>Undo</button>
+    <button id="redoBtn" disabled>Redo</button>
+    <button id="exportBtn">Export</button>
+    <button id="importBtn">Import</button>
+    <input type="file" id="fileInput" style="display: none;" />
+  </div>
+
+  <!-- Notifications -->
+  <div id="notifications"></div>
+
+  <!-- Edit Modal -->
+  <div id="modal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <input id="editInput" type="text" />
+      <button id="saveBtn">Save</button>
+      <button id="deleteBtn">Delete</button>
+      <button id="cancelBtn">Cancel</button>
+    </div>
+  </div>
+  <footer></footer>
   <script type="module" src="script.js" defer></script>
 </body>
 </html>
