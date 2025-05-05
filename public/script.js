@@ -106,7 +106,7 @@ onAuthStateChanged(auth, (user) => {
   } else {
     loginModal.style.display = 'flex';
     kidBar.style.display = 'none';
-    board.innerHTML = '<h1>Responsibility Ladder</h1><p>Please log in to continue.</p>';
+    board.innerHTML = '<h1>LevelUp</h1><p>Please log in to continue.</p>';
     todoList.innerHTML = '<li>Please log in to see your to-do responsibilities.</li>';
     masteredList.innerHTML = '<li>Please log in to see your mastered responsibilities.</li>';
   }
@@ -445,17 +445,18 @@ async function populateListsWithUserData(userData) {
 function buildBoard() {
   board.innerHTML = '';
   if (!data) {
-    board.innerHTML = '<h1>Responsibility Ladder</h1><p>No data available. Please add some responsibilities or privileges.</p>';
+    board.innerHTML = '<h1>LevelUp</h1><p>No data available. Please add some items.</p>';
     return;
   }
   const header = document.createElement('h1');
-  header.textContent = 'Responsibility Ladder';
+  header.textContent = 'LevelUp';
   board.appendChild(header);
 
-  // Move kid selection bar into board
-  const bar = document.getElementById('kidBar');
-  bar.style.order = 0;
-  board.appendChild(bar);
+  // Display selected child's name
+  const childNameHeader = document.createElement('h2');
+  childNameHeader.className = 'child-name';
+  childNameHeader.textContent = store.currentKid;
+  board.appendChild(childNameHeader);
 
   // Current Level display
   const masteredSet = new Set(store.mastered[store.currentKid] || []);
@@ -517,6 +518,8 @@ function buildBoard() {
     exportBtn,
     logoutBtn
   ].forEach(btn => controls.appendChild(btn));
+  // Append kid selector dropdown into bottom controls
+  controls.appendChild(kidBar);
   // Show logged-in user email at bottom
   controls.appendChild(userEmail);
   board.appendChild(controls);
