@@ -515,8 +515,9 @@ function buildBoard() {
     tiersContainer.appendChild(col);
   });
 
-  // Removed: populateLocalLists();
-  // Removed: updateMasteredList();
+  // Populate tier lists from current data
+  populateLocalLists();
+
   attachEvents();
   updateAllTiers();
 
