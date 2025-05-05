@@ -20,6 +20,12 @@ import {
 } from 'firebase/firestore';
 import { app } from './firebaseConfig.js';
 
+// Enable offline persistence to keep data across reloads
+import { enableIndexedDbPersistence } from 'firebase/firestore';
+enableIndexedDbPersistence(db).catch((err) => {
+  console.error('Failed to enable indexedDB persistence:', err);
+});
+
 // Initialize Auth & Firestore
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -28,7 +34,7 @@ const db = getFirestore(app);
 setLogLevel('debug');
 
 // Connect to emulators if running locally
-if (window.location.hostname === 'localhost') {
+if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
   connectAuthEmulator(auth, 'http://localhost:9099');
   connectFirestoreEmulator(db, 'localhost', 8080);
 }
@@ -162,6 +168,7 @@ async function loadStore(uid) {
   try {
     const userDocRef = doc(db, 'users', uid);
     const docSnap = await getDoc(userDocRef);
+    console.log('loadStore: fetched user document', { exists: docSnap.exists(), data: docSnap.data() });
     if (docSnap.exists()) {
       store = docSnap.data().store;
       Object.keys(store.profiles).forEach(kid => {
@@ -189,6 +196,7 @@ async function loadStore(uid) {
 }
 
 async function saveStore(action = null, uid = auth.currentUser?.uid) {
+  console.log('saveStore: writing store to Firestore', store);
   if (!uid) return;
   if (action) {
     actionHistory = actionHistory.slice(0, actionHistoryIndex + 1);
