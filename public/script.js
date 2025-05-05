@@ -22,13 +22,14 @@ import { app } from './firebaseConfig.js';
 
 // Enable offline persistence to keep data across reloads
 import { enableIndexedDbPersistence } from 'firebase/firestore';
-enableIndexedDbPersistence(db).catch((err) => {
-  console.error('Failed to enable indexedDB persistence:', err);
-});
 
 // Initialize Auth & Firestore
 const auth = getAuth(app);
 const db = getFirestore(app);
+// Enable offline persistence to keep data across reloads
+enableIndexedDbPersistence(db).catch((err) => {
+  console.error('Failed to enable indexedDB persistence:', err);
+});
 
 // Enable verbose Firestore logging
 setLogLevel('debug');
