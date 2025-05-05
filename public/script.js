@@ -451,27 +451,33 @@ function buildBoard() {
   const header = document.createElement('h1');
   header.textContent = 'Responsibility Ladder';
   board.appendChild(header);
-  
-  // Create top section for mastered items
-  const masteredSection = document.createElement('div');
-  masteredSection.className = 'section mastered-section';
-  masteredSection.innerHTML = '<h2>Mastered Responsibilities</h2>';
-  const masteredListEl = document.createElement('ul');
-  masteredListEl.id = 'mastered-list';
-  masteredListEl.setAttribute('aria-live', 'polite');
-  masteredSection.appendChild(masteredListEl);
-  board.appendChild(masteredSection);
-  
-  // Create section for to-do items
-  const todoSection = document.createElement('div');
-  todoSection.className = 'section todo-section';
-  todoSection.innerHTML = '<h2>To-Do Responsibilities</h2>';
-  const todoListEl = document.createElement('ul');
-  todoListEl.id = 'todo-list';
-  todoListEl.setAttribute('aria-live', 'polite');
-  todoSection.appendChild(todoListEl);
-  board.appendChild(todoSection);
-  
+
+  // Move kid selection bar into board
+  const bar = document.getElementById('kidBar');
+  bar.style.order = 0;
+  board.appendChild(bar);
+
+  // Current Level display
+  const masteredSet = new Set(store.mastered[store.currentKid] || []);
+  let highest = 0;
+  TIER_CONFIG.forEach(t => {
+    const resp = (data[t.id]?.responsibilities || []);
+    if (resp.length && resp.every(text => masteredSet.has(text))) highest = t.id;
+  });
+  const next = Math.min(highest + 1, TIER_CONFIG.length);
+  const nextResp = data[next]?.responsibilities || [];
+  const nextCount = nextResp.length;
+  const doneCount = nextResp.filter(text => masteredSet.has(text)).length;
+  const pct = nextCount ? Math.round((doneCount / nextCount) * 100) : 0;
+  const levelSection = document.createElement('div');
+  levelSection.className = 'level-section';
+  levelSection.innerHTML = `
+    <h2>Current Level: Tier ${highest}</h2>
+    <p>Next: Tier ${next} (${doneCount}/${nextCount} done)</p>
+    <div class="progress-bar"><span style="width:${pct}%"></span></div>
+  `;
+  board.appendChild(levelSection);
+
   // Build the tier sections
   TIER_CONFIG.forEach(tier => {
     const col = document.createElement('div');
@@ -487,11 +493,26 @@ function buildBoard() {
       </div>`;
     board.appendChild(col);
   });
-  
-  populateLocalLists();
-  updateMasteredList();
+
+  // Removed: populateLocalLists();
+  // Removed: updateMasteredList();
   attachEvents();
   updateAllTiers();
+
+  // Bottom controls
+  const controls = document.createElement('div');
+  controls.className = 'controls';
+  [
+    addKidBtn,
+    renameKidBtn,
+    deleteKidBtn,
+    undoBtn,
+    redoBtn,
+    importBtn,
+    exportBtn,
+    logoutBtn
+  ].forEach(btn => controls.appendChild(btn));
+  board.appendChild(controls);
 }
 
 // Helpers for building the board
