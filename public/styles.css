@@ -159,9 +159,16 @@ h1 {
 .board {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
+  justify-content: space-between;
   padding: 2rem;
   gap: 2rem;
+}
+
+/* Responsive layout for tiers */
+.tier {
+  flex: 1 1 calc(20% - 20px);
+  box-sizing: border-box;
+  margin: 10px;
 }
 
 /* Sections */
@@ -401,6 +408,32 @@ li:focus {
   transform: translateY(-3px);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
   background: linear-gradient(45deg, #3b82f6, #7c3aed);
+}
+
+/* Control panel buttons */
+#controls button {
+  padding: 0.6rem 1.2rem;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(45deg, #7c3aed, #3b82f6);
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  margin-right: 0.5rem;
+}
+
+#controls button:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(45deg, #3b82f6, #7c3aed);
+}
+
+#controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 footer {
@@ -679,13 +712,11 @@ footer {
 
   .board {
     flex-direction: column;
-    align-items: center;
-    padding: 1.2rem;
   }
-
   .tier {
+    flex: none;
     width: 100%;
-    max-width: 400px;
+    margin: 5px 0;
   }
 
   .todo-section, .mastered-section {
