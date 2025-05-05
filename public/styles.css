@@ -752,13 +752,13 @@ footer {
 .tiers-container {
   display: flex;
   gap: 0.5rem;
-  justify-content: space-between;
+  justify-content: flex-start;
   margin: 0.5rem 0;
   flex-wrap: wrap;
 }
 .tiers-container .tier {
-  flex: 1 1 20%;
-  max-width: 20%;
+  flex: 0 0 calc((100% - 2rem) / 5);
+  max-width: calc((100% - 2rem) / 5);
   margin: 0;
 }
 
