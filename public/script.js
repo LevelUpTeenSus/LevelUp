@@ -276,6 +276,8 @@ function initializeApp({ isChild }) {
           if (elements.deleteKidBtn) elements.deleteKidBtn.style.display = 'none';
           if (elements.kidBar) elements.kidBar.style.display = 'none';
           if (elements.logoutBtn) elements.logoutBtn.style.display = '';
+          // Ensure the kidSelect is hidden for child view
+          if (elements.kidSelect) elements.kidSelect.style.display = 'none';
         } else {
           if (elements.loginBtn) elements.loginBtn.style.display = 'none';
           if (elements.registerBtn) elements.registerBtn.style.display = 'none';
@@ -286,8 +288,15 @@ function initializeApp({ isChild }) {
           if (elements.renameKidBtn) elements.renameKidBtn.style.display = '';
           if (elements.deleteKidBtn) elements.deleteKidBtn.style.display = '';
           if (elements.kidBar) elements.kidBar.style.display = 'flex';
+          // Ensure the kidSelect is visible for parent view
+          if (elements.kidSelect) elements.kidSelect.style.display = '';
         }
-        if (userEmail) userEmail.textContent = user.email; // Check user session and initialize UI
+        // Shared top bar controls logic (ensure always initialized)
+        if (elements.userEmail) elements.userEmail.textContent = user.email;
+        if (elements.logoutBtn) elements.logoutBtn.style.display = '';
+        // Undo/Redo buttons logic (if present in DOM)
+        if (elements.undoBtn) elements.undoBtn.style.display = '';
+        if (elements.redoBtn) elements.redoBtn.style.display = '';
 
         if (userRole === 'parent') {
           await initParentDashboard(user.uid, elements);
@@ -441,8 +450,6 @@ async function initParentDashboard(userId, elements) {
  */
 async function initChildDashboard(userId, elements) {
   // Hide parent-only controls for children
-  // Use the elements passed in, guard against missing elements
-  // Hide parent-only controls for children
   if (elements.kidSelect) elements.kidSelect.style.display = 'none';
   if (elements.addKidBtn) elements.addKidBtn.style.display = 'none';
   if (elements.renameKidBtn) elements.renameKidBtn.style.display = 'none';
@@ -485,6 +492,11 @@ async function initChildDashboard(userId, elements) {
     }
     data = store.profiles[store.currentKid];
     buildBoardChild(elements);
+    // Show kidBar for child if present (shared top bar logic)
+    if (elements.kidBar) {
+      elements.kidBar.style.display = 'flex';
+      initKidBar(elements);
+    }
     loadChildStreak(userId, elements);
   } catch (e) {
     handleError(e, 'Failed to initialize child dashboard');
@@ -728,12 +740,12 @@ function isDuplicate(text, category, tierId) {
  * @param {Object} elements
  */
 function initKidBar(elements) {
+  if (userRole !== 'parent') return;
   const { kidSelect, addKidBtn, renameKidBtn, deleteKidBtn, undoBtn, redoBtn } = elements;
   if (!kidSelect) {
     console.error('kidSelect element is required but not found');
     return;
   }
-  // Ensure the dropdown is visible for parent users
   kidSelect.style.display = '';
   refreshKidSelect();
   kidSelect.value = store.currentKid;
@@ -862,13 +874,14 @@ function buildBoard(elements) {
     return;
   }
 
+  // Shared top header fragment for both parent and child
   const topHeader = document.createElement('div');
   topHeader.className = 'top-header';
   topHeader.innerHTML = `
     <h1>LevelUp</h1>
     <h2 class="child-name">${store.currentKid}</h2>
   `;
-
+  // Level section logic
   const masteredSet = new Set(store.mastered[store.currentKid] || []);
   let highest = 0;
   CONFIG.TIER_CONFIG.forEach(t => {
@@ -887,6 +900,7 @@ function buildBoard(elements) {
     <p>Next: Tier ${next} (${doneCount}/${nextCount} done)</p>
   `;
   topHeader.appendChild(levelSection);
+  // Streak display will be appended by loadChildStreak if needed
   contentArea.appendChild(topHeader);
 
   const tiersContainer = document.createElement('div');
@@ -1350,8 +1364,8 @@ function buildBoardChild(elements) {
   if (registerBtn) registerBtn.style.display = 'none';
   if (googleBtn) googleBtn.style.display = 'none';
   if (logoutBtn) logoutBtn.style.display = '';
-  // Guard removal of buttons via selectors
-  if (elements.board) {
+  // Remove edit/move/add/undo/redo buttons only if not child or if editing is restricted
+  if (elements.board && userRole === 'child') {
     document.querySelectorAll('.add-btn, .move-btn, button.modify, .undo-btn, .redo-btn').forEach(btn => btn.remove());
     document.querySelectorAll('li span').forEach(span => span.ondblclick = null);
   }
