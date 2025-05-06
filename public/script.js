@@ -26,7 +26,6 @@ import {
   query,
   where,
   orderBy,
-  limit,
   initializeFirestore,
   persistentLocalCache,
   persistentSingleTabManager
@@ -123,13 +122,11 @@ document.addEventListener('DOMContentLoaded', () => {
     userEmail: document.getElementById('userEmail'),
     logoutBtn: document.getElementById('logoutBtn'),
     inviteBtn: document.getElementById('inviteBtn'),
-    kidBar: document.getElementById('kidBar'),
-    todoList: document.getElementById('todo-list'),
-    masteredList: document.getElementById('mastered-list')
+    kidBar: document.getElementById('kidBar')
   };
 
   // Validate DOM elements
-  const requiredElements = ['board', 'kidSelect', 'loginModal', 'todoList', 'masteredList'];
+  const requiredElements = ['board', 'kidSelect', 'loginModal'];
   for (const [key, el] of Object.entries(elements)) {
     if (!el && requiredElements.includes(key)) {
       console.error(`Required DOM element "${key}" not found`);
@@ -165,7 +162,7 @@ function waitForAuthState() {
 function resetUIElements(elements) {
   const {
     loginBtn, registerBtn, googleBtn, logoutBtn, inviteBtn, addKidBtn,
-    renameKidBtn, deleteKidBtn, kidBar, board, loginModal, todoList, masteredList
+    renameKidBtn, deleteKidBtn, kidBar, board, loginModal
   } = elements;
   // Default hidden state
   [logoutBtn, inviteBtn, addKidBtn, renameKidBtn, deleteKidBtn, kidBar].forEach(el => {
@@ -177,8 +174,6 @@ function resetUIElements(elements) {
   });
   if (loginModal) loginModal.style.display = 'flex';
   if (board) board.innerHTML = '<h1>LevelUp</h1><p>Please log in to continue.</p>';
-  if (todoList) todoList.innerHTML = '<li>Please log in to see your to-do responsibilities.</li>';
-  if (masteredList) masteredList.innerHTML = '<li>Please log in to see your mastered responsibilities.</li>';
 }
 
 /**
@@ -700,69 +695,6 @@ function deleteKid() {
 
 
 
-/**
- * Populates to-do and mastered lists.
- * @param {Object} userData
- */
-async function populateListsWithUserData(userData) {
-  const todoList = document.getElementById('todo-list');
-  const masteredList = document.getElementById('mastered-list');
-  if (!todoList || !masteredList) return;
-  try {
-    if (!userData?.store?.mastered?.[userData.store.currentKid]) {
-      throw new Error('Invalid user data structure');
-    }
-    
-    const itemsQuery = query(collection(db, CONFIG.COLLECTIONS.ITEMS), limit(100));
-    let itemsSnapshot = await getDocs(itemsQuery);
-    
-    if (itemsSnapshot.empty) {
-      const sampleItems = [
-        { id: '1', name: 'Brush teeth' },
-        { id: '2', name: 'Make bed' },
-        { id: '3', name: 'Do homework' }
-      ];
-      for (const item of sampleItems) {
-        const itemRef = doc(db, CONFIG.COLLECTIONS.ITEMS, item.id);
-        if (!(await getDoc(itemRef)).exists()) {
-          await setDoc(itemRef, item);
-        }
-      }
-      itemsSnapshot = await getDocs(itemsQuery);
-    }
-    
-    const lists = { todo: [], mastered: [] };
-    itemsSnapshot.forEach((doc) => {
-      const itemData = doc.data();
-      if (masteredSet(itemData.name, userData)) {
-        lists.mastered.push(itemData);
-      } else {
-        lists.todo.push(itemData);
-      }
-    });
-    
-    todoList.innerHTML = lists.todo.length
-      ? lists.todo.map(item => `<li>${item.name}</li>`).join('')
-      : '<li>No to-do responsibilities.</li>';
-    masteredList.innerHTML = lists.mastered.length
-      ? lists.mastered.map(item => `<li>${item.name}</li>`).join('')
-      : '<li>No mastered responsibilities.</li>';
-  } catch (error) {
-    handleError(error, 'Failed to load lists');
-    todoList.innerHTML = '<li>Failed to load to-do responsibilities.</li>';
-    masteredList.innerHTML = '<li>Failed to load mastered responsibilities.</li>';
-  }
-}
-
-/**
- * Checks if an item is mastered.
- * @param {string} item
- * @param {Object} userData
- * @returns {boolean}
- */
-function masteredSet(item, userData) {
-  return userData?.store?.mastered?.[userData.store.currentKid]?.includes(item) || false;
-}
 
 /**
  * Builds the board for parent view.
@@ -1275,16 +1207,12 @@ function renameMastered(oldText, newText) {
 
 /**
  * Builds board with user data.
- * @param {string} userId
- * @param {Object} elements
  */
-async function buildBoardWithUserData(userId, elements) {
+function buildBoardWithUserData() {
   try {
     buildBoard();
-    await populateListsWithUserData({ store });
   } catch (error) {
     handleError(error, 'Failed to build board');
-    buildBoard();
   }
 }
 
