@@ -778,6 +778,11 @@ function masteredSet(item, userData) {
  * Builds the board for parent view.
  */
 function buildBoard() {
+  // Make sure essential control buttons are visible
+  ['logoutBtn', 'addKidBtn', 'renameKidBtn', 'deleteKidBtn', 'inviteBtn'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) btn.style.display = '';
+  });
   const board = document.getElementById('board');
   board.innerHTML = '';
   
