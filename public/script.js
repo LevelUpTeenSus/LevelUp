@@ -222,7 +222,7 @@ function initializeApp(elements) {
         registerBtn.style.display = 'none';
         googleBtn.style.display = 'none';
         logoutBtn.style.display = '';
-        userEmail.textContent 사용자 세션 확인 및 UI 초기화(user.email);
+        userEmail.textContent = user.email; // Check user session and initialize UI
         board.innerHTML = '<p>Loading...</p>';
 
         // Only show parent-specific controls if userRole is 'parent'
