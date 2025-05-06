@@ -153,69 +153,79 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-loginBtn.onclick = async () => {
-  const email = emailInput.value.trim();
-  const password = passwordInput.value.trim();
-  if (!email || !password) return showNotification('Email and password are required', 'error');
-  try {
-    await signInWithEmailAndPassword(auth, email, password);
-    showNotification('Logged in successfully', 'success');
-  } catch (err) {
-    handleError(err, 'Failed to log in');
-  }
-};
-
-registerBtn.onclick = async () => {
-  const email = emailInput.value.trim();
-  const password = passwordInput.value.trim();
-  if (!email || !password) return showNotification('Email and password are required', 'error');
-  try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-    await setDoc(doc(db, 'userRoles', user.uid), { role: 'parent' });
-    showNotification('Registered successfully', 'success');
-  } catch (err) {
-    handleError(err, 'Failed to register');
-  }
-};
-
-googleBtn.onclick = async () => {
-  const provider = new GoogleAuthProvider();
-  try {
-    const userCredential = await signInWithPopup(auth, provider);
-    const user = userCredential.user;
-    const roleRef = doc(db, 'userRoles', user.uid);
-    const roleSnap = await getDoc(roleRef);
-    if (!roleSnap.exists()) {
-      await setDoc(roleRef, { role: 'parent' });
+if (loginBtn) {
+  loginBtn.onclick = async () => {
+    const email = emailInput.value.trim();
+    const password = passwordInput.value.trim();
+    if (!email || !password) return showNotification('Email and password are required', 'error');
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      showNotification('Logged in successfully', 'success');
+    } catch (err) {
+      handleError(err, 'Failed to log in');
     }
-    showNotification('Signed in with Google', 'success');
-  } catch (err) {
-    handleError(err, 'Failed to sign in with Google');
-  }
-};
+  };
+}
 
-logoutBtn.onclick = async () => {
-  try {
-    // Persist any unsaved changes before logging out
-    await saveStore();
-    await signOut(auth);
-    showNotification('Logged out successfully', 'success');
-  } catch (err) {
-    handleError(err, 'Failed to log out');
-  }
-};
+if (registerBtn) {
+  registerBtn.onclick = async () => {
+    const email = emailInput.value.trim();
+    const password = passwordInput.value.trim();
+    if (!email || !password) return showNotification('Email and password are required', 'error');
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      await setDoc(doc(db, 'userRoles', user.uid), { role: 'parent' });
+      showNotification('Registered successfully', 'success');
+    } catch (err) {
+      handleError(err, 'Failed to register');
+    }
+  };
+}
 
-inviteBtn.onclick = async () => {
-  try {
-    const code = Math.random().toString(36).substring(2,8).toUpperCase();
-    await setDoc(doc(db, 'invitations', code), { parentUid: auth.currentUser.uid });
-    navigator.clipboard.writeText(code);
-    showNotification(`Invite code ${code} copied to clipboard`, 'success');
-  } catch (err) {
-    handleError(err, 'Failed to generate invite code');
-  }
-};
+if (googleBtn) {
+  googleBtn.onclick = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const userCredential = await signInWithPopup(auth, provider);
+      const user = userCredential.user;
+      const roleRef = doc(db, 'userRoles', user.uid);
+      const roleSnap = await getDoc(roleRef);
+      if (!roleSnap.exists()) {
+        await setDoc(roleRef, { role: 'parent' });
+      }
+      showNotification('Signed in with Google', 'success');
+    } catch (err) {
+      handleError(err, 'Failed to sign in with Google');
+    }
+  };
+}
+
+if (logoutBtn) {
+  logoutBtn.onclick = async () => {
+    try {
+      // Persist any unsaved changes before logging out
+      await saveStore();
+      await signOut(auth);
+      showNotification('Logged out successfully', 'success');
+    } catch (err) {
+      handleError(err, 'Failed to log out');
+    }
+  };
+}
+
+if (inviteBtn) {
+  inviteBtn.onclick = async () => {
+    try {
+      const code = Math.random().toString(36).substring(2,8).toUpperCase();
+      await setDoc(doc(db, 'invitations', code), { parentUid: auth.currentUser.uid });
+      navigator.clipboard.writeText(code);
+      showNotification(`Invite code ${code} copied to clipboard`, 'success');
+    } catch (err) {
+      handleError(err, 'Failed to generate invite code');
+    }
+  };
+}
 
 // Persistence Helpers
 async function loadStore(uid) {
@@ -332,14 +342,30 @@ function initKidBar() {
     saveStore('changeKid');
     buildBoard();
   };
-  addKidBtn.onclick = addKid;
-  renameKidBtn.onclick = renameKid;
-  deleteKidBtn.onclick = deleteKid;
-  undoBtn.onclick = undo;
-  redoBtn.onclick = redo;
-  exportBtn.onclick = exportJSON;
-  importBtn.onclick = () => fileInput.click();
-  fileInput.onchange = importJSON;
+  if (addKidBtn) {
+    addKidBtn.onclick = addKid;
+  }
+  if (renameKidBtn) {
+    renameKidBtn.onclick = renameKid;
+  }
+  if (deleteKidBtn) {
+    deleteKidBtn.onclick = deleteKid;
+  }
+  if (undoBtn) {
+    undoBtn.onclick = undo;
+  }
+  if (redoBtn) {
+    redoBtn.onclick = redo;
+  }
+  if (exportBtn) {
+    exportBtn.onclick = exportJSON;
+  }
+  if (importBtn) {
+    importBtn.onclick = () => fileInput && fileInput.click();
+  }
+  if (fileInput) {
+    fileInput.onchange = importJSON;
+  }
 }
 
 function refreshKidSelect() {
@@ -757,44 +783,50 @@ function closeModal() {
   curLi = null;
 }
 
-saveBtn.onclick = () => {
-  if (!curLi) return;
-  const newText = editInput.value.trim();
-  const error = validateInput(newText);
-  if (error) return showNotification(error, 'error');
-  const tierId = curLi.closest('.tier').dataset.tier;
-  if (isDuplicate(newText, curLi.dataset.category, tierId)) {
-    showNotification('Item already exists in this tier', 'error');
-    return;
-  }
-  const oldText = curLi.querySelector('span').textContent;
-  curLi.querySelector('span').textContent = newText;
-  replaceText(oldText, newText, curLi.dataset.category);
-  renameMastered(oldText, newText);
-  saveStore('edit');
-  updateMasteredList();
-  closeModal();
-};
-
-deleteBtn.onclick = () => {
-  if (!curLi) return;
-  const txt = curLi.querySelector('span').textContent;
-  const tier = curLi.closest('.tier');
-  removeText(txt, curLi.dataset.category);
-  const m = getMasteredSet();
-  m.delete(txt);
-  saveMastered(m);
-  curLi.style.animation = 'fadeOut 0.3s ease';
-  curLi.addEventListener('animationend', () => {
-    curLi.remove();
-    saveStore('delete');
+if (saveBtn) {
+  saveBtn.onclick = () => {
+    if (!curLi) return;
+    const newText = editInput.value.trim();
+    const error = validateInput(newText);
+    if (error) return showNotification(error, 'error');
+    const tierId = curLi.closest('.tier').dataset.tier;
+    if (isDuplicate(newText, curLi.dataset.category, tierId)) {
+      showNotification('Item already exists in this tier', 'error');
+      return;
+    }
+    const oldText = curLi.querySelector('span').textContent;
+    curLi.querySelector('span').textContent = newText;
+    replaceText(oldText, newText, curLi.dataset.category);
+    renameMastered(oldText, newText);
+    saveStore('edit');
     updateMasteredList();
-    updateTier(tier);
     closeModal();
-  }, { once: true });
-};
+  };
+}
 
-cancelBtn.onclick = closeModal;
+if (deleteBtn) {
+  deleteBtn.onclick = () => {
+    if (!curLi) return;
+    const txt = curLi.querySelector('span').textContent;
+    const tier = curLi.closest('.tier');
+    removeText(txt, curLi.dataset.category);
+    const m = getMasteredSet();
+    m.delete(txt);
+    saveMastered(m);
+    curLi.style.animation = 'fadeOut 0.3s ease';
+    curLi.addEventListener('animationend', () => {
+      curLi.remove();
+      saveStore('delete');
+      updateMasteredList();
+      updateTier(tier);
+      closeModal();
+    }, { once: true });
+  };
+}
+
+if (cancelBtn) {
+  cancelBtn.onclick = closeModal;
+}
 modal.onclick = e => { if (e.target === modal) closeModal(); };
 window.onkeydown = e => { if (e.key === 'Escape') closeModal(); };
 
