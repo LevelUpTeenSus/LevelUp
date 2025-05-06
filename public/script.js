@@ -164,7 +164,10 @@ function getElements() {
     userEmail: document.getElementById('userEmail'),
     logoutBtn: document.getElementById('logoutBtn'),
     inviteBtn: document.getElementById('inviteBtn'),
-    kidBar: document.getElementById('kidBar')
+    kidBar: document.getElementById('kidBar'),
+    // Add undo/redo button references if present
+    undoBtn: document.getElementById('undoBtn'),
+    redoBtn: document.getElementById('redoBtn')
   };
 }
 

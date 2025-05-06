@@ -15,8 +15,13 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <header class="top-header">
+    <h1>LevelUp</h1>
+    <button id="logoutBtn" style="display: none;">Logout</button>
+  </header>
+
   <div id="board"></div>
-  <!-- Only the logout button and board -->
+
   <script type="module">
     import { initializeChildApp } from '/script.js';
     initializeChildApp();
