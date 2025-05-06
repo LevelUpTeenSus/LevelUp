@@ -1,3 +1,7 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
 // UserRoles: allow users to read/write their own role document
 match /userRoles/{userId} {
   allow read, write: if request.auth != null && request.auth.uid == userId;
@@ -57,4 +61,7 @@ match /items/{itemId} {
   // Only parents can write
   allow write: if request.auth != null
     && get(/databases/$(database)/documents/userRoles/$(request.auth.uid)).data.role == 'parent';
+}
+
+  }
 }
