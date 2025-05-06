@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="styles.css">
   <link rel="icon" href="favicon.ico">
   <title>LevelUp</title>
+  <script src="https://www.google.com/recaptcha/api.js?render=YOUR_RECAPTCHA_SITE_KEY"></script>
   <script type="importmap">
   {
     "imports": {
@@ -32,9 +33,6 @@
     </div>
   </div>
 
-  <!-- Kid Selector Bar -->
- 
-
   <main id="board">
     <div class="top-header">
       <h1>LevelUp</h1>
@@ -44,9 +42,17 @@
     <p class="loading">Loading… please log in or register.</p>
     <ul id="todo-list" class="task-list todo-list"></ul>
     <ul id="mastered-list" class="task-list mastered-list"></ul>
+    <div id="kidBar" role="navigation" aria-label="Kid selection and controls">
+      <select id="kidSelect" aria-label="Select Kid"></select>
+      <button id="addKidBtn">Add Kid</button>
+      <button id="renameKidBtn">Rename Kid</button>
+      <button id="deleteKidBtn">Delete Kid</button>
+      <button id="inviteBtn" aria-label="Invite a child to join">Invite Child</button>
+      <span id="userEmail"></span>
+      <button id="logoutBtn">Logout</button>
+    </div>
   </main>
 
-  <!-- Control Buttons -->
   <div id="controls">
     <button id="undoBtn" disabled>Undo</button>
     <button id="redoBtn" disabled>Redo</button>
@@ -71,18 +77,9 @@
   </div>
 
   <footer>
-    <p>&copy; 2025 LevelUp. All rights reserved.</p>
+    <p>© 2025 LevelUp. All rights reserved.</p>
   </footer>
 
   <script type="module" src="script.js" defer></script>
-  <div id="kidBar">
-    <select id="kidSelect" aria-label="Select Kid"></select>
-    <button id="addKidBtn">Add Kid</button>
-    <button id="renameKidBtn">Rename Kid</button>
-    <button id="deleteKidBtn">Delete Kid</button>
-    <button id="inviteChildBtn">Invite Child</button>
-    <span id="userEmail"></span>
-    <button id="logoutBtn">Logout</button>
-  </div>
 </body>
 </html>

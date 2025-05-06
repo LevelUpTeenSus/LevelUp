@@ -27,8 +27,11 @@ import {
   where,
   orderBy,
   limit,
-  enableIndexedDbPersistence
+  initializeFirestore,
+  persistentLocalCache,
+  persistentSingleTabManager
 } from 'firebase/firestore';
+import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 import { app } from './firebaseConfig.js';
 
 // Constants
@@ -73,17 +76,16 @@ let userRole = null;
 
 // Initialize Firebase
 const auth = getAuth(app);
-const db = getFirestore(app);
-
-// Enable offline persistence
-enableIndexedDbPersistence(db).catch(err => 
-  handleError(err, 'Offline support unavailable. Data may not persist offline.')
-);
+const db = initializeFirestore(app, {
+  cache: persistentLocalCache({
+    tabManager: persistentSingleTabManager()
+  })
+});
 
 // Enable Firestore debug logging
 setLogLevel('debug');
 
-// Connect to emulators if running locally
+// Connect to emulators and initialize App Check
 const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
 if (isLocalhost) {
   try {
@@ -94,6 +96,11 @@ if (isLocalhost) {
     console.warn('Failed to connect to Firebase emulators:', err);
     showNotification('Emulator connection failed. Using production Firebase.', 'warning');
   }
+} else {
+  initializeAppCheck(app, {
+    provider: new ReCaptchaV3Provider('YOUR_RECAPTCHA_SITE_KEY'),
+    isTokenAutoRefreshEnabled: true
+  });
 }
 
 // DOM Initialization
@@ -130,17 +137,33 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // Validate DOM elements
+  const requiredElements = ['board', 'kidSelect', 'loginModal', 'todoList', 'masteredList'];
   for (const [key, el] of Object.entries(elements)) {
-    if (!el) {
-      console.error(`DOM element "${key}" not found`);
+    if (!el && requiredElements.includes(key)) {
+      console.error(`Required DOM element "${key}" not found`);
       showNotification('Application initialization failed', 'error');
       return;
+    } else if (!el) {
+      console.warn(`Optional DOM element "${key}" not found`);
     }
   }
 
   elements.board.classList.add('board');
   initializeApp(elements);
 });
+
+/**
+ * Waits for auth state to resolve.
+ * @returns {Promise<{ user: firebase.User | null, uid: string | null }>}
+ */
+function waitForAuthState() {
+  return new Promise((resolve) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      unsubscribe();
+      resolve({ user, uid: user?.uid || null });
+    });
+  });
+}
 
 /**
  * Initializes the app with DOM elements.
@@ -167,6 +190,7 @@ function initializeApp(elements) {
     board.innerHTML = '<p>Loading...</p>';
     if (user) {
       try {
+        await user.getIdToken(true); // Force refresh token
         const roleRef = doc(db, CONFIG.COLLECTIONS.ROLES, user.uid);
         let roleSnap = await getDoc(roleRef);
         if (!roleSnap.exists()) {
@@ -187,6 +211,10 @@ function initializeApp(elements) {
         }
       } catch (e) {
         handleError(e, 'Failed to initialize dashboard');
+        if (e.code === 'auth/network-request-failed' || e.code === 'auth/invalid-credential') {
+          showNotification('Authentication error. Please log in again.', 'error');
+          await signOut(auth);
+        }
         board.innerHTML = '<p>Error loading dashboard. Please try again.</p>';
       }
     } else {
@@ -251,20 +279,22 @@ function initializeApp(elements) {
     }
   };
 
-  inviteBtn.onclick = async () => {
-    try {
-      const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-      await setDoc(doc(db, CONFIG.COLLECTIONS.INVITES, code), { 
-        parentUid: auth.currentUser.uid,
-        createdAt: new Date(),
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24h expiry
-      });
-      navigator.clipboard.writeText(code);
-      showNotification(`Invite code ${code} copied to clipboard`, 'success');
-    } catch (err) {
-      handleError(err, 'Failed to generate invite code');
-    }
-  };
+  if (inviteBtn && userRole === 'parent') {
+    inviteBtn.onclick = async () => {
+      try {
+        const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+        await setDoc(doc(db, CONFIG.COLLECTIONS.INVITES, code), { 
+          parentUid: auth.currentUser.uid,
+          createdAt: new Date(),
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+        });
+        navigator.clipboard.writeText(code);
+        showNotification(`Invite code ${code} copied to clipboard`, 'success');
+      } catch (err) {
+        handleError(err, 'Failed to generate invite code');
+      }
+    };
+  }
 
   // Modal events
   saveBtn.onclick = () => saveModal(editInput, modal);
@@ -280,6 +310,11 @@ function initializeApp(elements) {
  * @param {Object} elements
  */
 async function initParentDashboard(userId, elements) {
+  const { user } = await waitForAuthState();
+  if (!user || user.uid !== userId) {
+    showNotification('Authentication required', 'error');
+    return;
+  }
   await loadStore(userId);
   initKidBar(elements);
   await buildBoardWithUserData(userId, elements);
@@ -291,6 +326,11 @@ async function initParentDashboard(userId, elements) {
  * @param {Object} elements
  */
 async function initChildDashboard(userId, elements) {
+  const { user } = await waitForAuthState();
+  if (!user || user.uid !== userId) {
+    showNotification('Authentication required', 'error');
+    return;
+  }
   try {
     const userRef = doc(db, CONFIG.COLLECTIONS.USERS, userId);
     const userSnap = await getDoc(userRef);
@@ -573,7 +613,7 @@ function addKid() {
   store.currentKid = kid;
   data = store.profiles[kid];
   saveStore('addKid');
-  refreshKidSelect();
+  refreshKid upplSelect();
   document.getElementById('kidSelect').value = kid;
   buildBoard();
 }
