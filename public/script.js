@@ -1,3 +1,15 @@
+export async function initializeParentApp() {
+  document.addEventListener('DOMContentLoaded', () => {
+    initializeApp({ isChild: false });
+  });
+}
+
+export async function initializeChildApp() {
+  document.addEventListener('DOMContentLoaded', () => {
+    initializeApp({ isChild: true });
+  });
+}
+
 /**
  * Generates and copies an invite code for a child profile.
  */
@@ -129,9 +141,9 @@ if (isLocalhost) {
   }
 }
 
-// DOM Initialization
-document.addEventListener('DOMContentLoaded', () => {
-  const elements = {
+
+function getElements() {
+  return {
     board: document.getElementById('board'),
     kidSelect: document.getElementById('kidSelect'),
     addKidBtn: document.getElementById('addKidBtn'),
@@ -154,23 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
     inviteBtn: document.getElementById('inviteBtn'),
     kidBar: document.getElementById('kidBar')
   };
-
-  // Validate DOM elements
-  const requiredElements = ['board', 'kidSelect', 'loginModal'];
-  for (const [key, el] of Object.entries(elements)) {
-    if (!el && requiredElements.includes(key)) {
-      console.error(`Required DOM element "${key}" not found`);
-      showNotification('Application initialization failed', 'error');
-      return;
-    } else if (!el) {
-      console.warn(`Optional DOM element "${key}" not found`);
-    }
-  }
-
-  elements.board.classList.add('board');
-  resetUIElements(elements);
-  initializeApp(elements);
-});
+}
 
 /**
  * Waits for auth state to resolve.
@@ -213,10 +209,28 @@ function resetUIElements(elements) {
 }
 
 /**
- * Initializes the app with DOM elements.
- * @param {Object} elements - DOM elements
+ * Initializes the app with config.
+ * @param {Object} param0 - config object
+ * @param {boolean} param0.isChild
  */
-function initializeApp(elements) {
+function initializeApp({ isChild }) {
+  const elements = getElements();
+
+  // Validate DOM elements
+  const requiredElements = ['board', 'kidSelect', 'loginModal'];
+  for (const [key, el] of Object.entries(elements)) {
+    if (!el && requiredElements.includes(key)) {
+      console.error(`Required DOM element "${key}" not found`);
+      showNotification('Application initialization failed', 'error');
+      return;
+    } else if (!el) {
+      console.warn(`Optional DOM element "${key}" not found`);
+    }
+  }
+
+  elements.board.classList.add('board');
+  resetUIElements(elements);
+
   const {
     board, kidSelect, addKidBtn, renameKidBtn, deleteKidBtn,
     notifications, modal, editInput, saveBtn,
@@ -251,22 +265,29 @@ function initializeApp(elements) {
           throw new Error(`Invalid role: ${userRole}`);
         }
         loginModal.style.display = 'none';
-        loginBtn.style.display = 'none';
-        registerBtn.style.display = 'none';
-        googleBtn.style.display = 'none';
-        logoutBtn.style.display = '';
+        // UI controls based on isChild
+        if (isChild) {
+          elements.loginBtn.style.display = 'none';
+          elements.registerBtn.style.display = 'none';
+          elements.googleBtn.style.display = 'none';
+          elements.inviteBtn.style.display = 'none';
+          elements.addKidBtn.style.display = 'none';
+          elements.renameKidBtn.style.display = 'none';
+          elements.deleteKidBtn.style.display = 'none';
+          elements.kidBar.style.display = 'none';
+          elements.logoutBtn.style.display = '';
+        } else {
+          elements.loginBtn.style.display = 'none';
+          elements.registerBtn.style.display = 'none';
+          elements.googleBtn.style.display = 'none';
+          elements.logoutBtn.style.display = '';
+          elements.inviteBtn.style.display = '';
+          elements.addKidBtn.style.display = '';
+          elements.renameKidBtn.style.display = '';
+          elements.deleteKidBtn.style.display = '';
+          elements.kidBar.style.display = 'flex';
+        }
         userEmail.textContent = user.email; // Check user session and initialize UI
-
-        // Only show parent-specific controls if userRole is 'parent'
-        inviteBtn.style.display = userRole === 'parent' ? '' : 'none';
-        addKidBtn.style.display = userRole === 'parent' ? '' : 'none';
-        renameKidBtn.style.display = userRole === 'parent' ? '' : 'none';
-        deleteKidBtn.style.display = userRole === 'parent' ? '' : 'none';
-        kidBar.style.display = userRole === 'parent' ? 'flex' : 'none';
-
-        // Ensure login/logout buttons are visible after removing loading line
-        loginBtn.style.display = '';
-        logoutBtn.style.display = '';
 
         if (userRole === 'parent') {
           await initParentDashboard(user.uid, elements);
@@ -312,12 +333,12 @@ function initializeApp(elements) {
     const password = passwordInput.value.trim();
     if (!email || !password) return showNotification('Email and password are required', 'error');
     // Invite/child registration logic
-    const isChild = document.getElementById('isChildCheckbox')?.checked;
+    const isChildReg = document.getElementById('isChildCheckbox')?.checked;
     const inviteCode = document.getElementById('inviteInput')?.value.trim().toUpperCase();
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const uid = userCredential.user.uid;
-      if (isChild) {
+      if (isChildReg) {
         // Set role to 'child' and link via invite code
         const invData = await promptForInviteCode(inviteCode);
         if (!invData) return;

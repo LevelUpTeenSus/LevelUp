@@ -26,6 +26,14 @@
     ],
     "rewrites": [
       {
+        "source": "/parent",
+        "destination": "/parent.html"
+      },
+      {
+        "source": "/child",
+        "destination": "/child.html"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }

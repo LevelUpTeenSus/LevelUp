@@ -20,73 +20,10 @@
   </script>
 </head>
 <body>
-  <!-- Login Modal -->
-  <div id="loginModal" class="modal" role="dialog" aria-modal="true">
-    <div class="modal-content">
-      <h2>Login or Register</h2>
-      <input id="emailInput" type="email" placeholder="Email" aria-label="Email" />
-      <input id="passwordInput" type="password" placeholder="Password" aria-label="Password" />
-      <div>
-        <label>
-          <input type="checkbox" id="isChildCheckbox">
-          I am a child (have an invite code)
-        </label>
-      </div>
-      <div id="inviteCodeContainer" style="display:none;">
-        <input type="text" id="inviteInput" placeholder="Enter invite code" aria-label="Invite code"/>
-      </div>
-      <div class="login-actions">
-        <button id="loginBtn" aria-label="Log in with email and password">Login</button>
-        <button id="registerBtn" aria-label="Register a new account">Register</button>
-        <button id="googleBtn" aria-label="Sign in with Google account">Sign in with Google</button>
-      </div>
-    </div>
-    <script>
-      const isChildCheckbox = document.getElementById('isChildCheckbox');
-      const inviteCodeContainer = document.getElementById('inviteCodeContainer');
-      isChildCheckbox.addEventListener('change', () => {
-        inviteCodeContainer.style.display = isChildCheckbox.checked ? 'block' : 'none';
-      });
-    </script>
-  </div>
-
-  <main id="board" role="main">
-    <div class="top-header">
-      <h1>LevelUp</h1>
-      <h2 class="child-name"></h2>
-      <div class="level-section"></div>
-    </div>
-    <div id="kidBar" class="kid-bar" role="navigation" aria-label="Kid selection and controls">
-      <select id="kidSelect" aria-label="Select Kid" style="display:none"></select>
-      <button id="addKidBtn" aria-label="Add a new kid">Add Kid</button>
-      <button id="renameKidBtn" aria-label="Rename selected kid">Rename Kid</button>
-      <button id="deleteKidBtn" aria-label="Delete selected kid">Delete Kid</button>
-      <button id="inviteBtn" aria-label="Invite a child to join">Invite Child</button>
-      <span id="userEmail"></span>
-      <button id="logoutBtn" class="logout-btn" aria-label="Log out of the application">Logout</button>
-    </div>
+  <main role="main">
+    <h1>Welcome to LevelUp</h1>
+    <p><a href="/parent">Go to Parent Dashboard</a></p>
+    <p><a href="/child">Go to Child Dashboard</a></p>
   </main>
-
-
-  <!-- Notifications -->
-  <div id="notifications"></div>
-
-  <!-- Edit Modal -->
-  <div id="modal" class="modal" role="dialog" aria-modal="true">
-    <div class="modal-content">
-      <input id="editInput" type="text" aria-label="Edit item" />
-      <div class="actions">
-        <button id="saveBtn" aria-label="Save changes to item">Save</button>
-        <button id="deleteBtn" aria-label="Delete item">Delete</button>
-        <button id="cancelBtn" aria-label="Cancel editing">Cancel</button>
-      </div>
-    </div>
-  </div>
-
-  <footer>
-    <p>© 2025 LevelUp. All rights reserved.</p>
-  </footer>
-
-  <script type="module" src="script.js" defer></script>
 </body>
 </html>
