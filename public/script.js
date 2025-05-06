@@ -217,7 +217,7 @@ function initializeApp({ isChild }) {
   const elements = getElements();
 
   // Validate DOM elements
-  const requiredElements = ['board', 'loginModal'];
+  const requiredElements = ['board'];
   for (const [key, el] of Object.entries(elements)) {
     if (!el && requiredElements.includes(key)) {
       console.error(`Required DOM element "${key}" not found`);
