@@ -31,7 +31,7 @@ import {
   persistentLocalCache,
   persistentSingleTabManager
 } from 'firebase/firestore';
-import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
+// import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 import { app } from './firebaseConfig.js';
 
 // Constants
@@ -95,16 +95,6 @@ if (isLocalhost) {
   } catch (err) {
     console.warn('Failed to connect to Firebase emulators:', err);
     showNotification('Emulator connection failed. Using production Firebase.', 'warning');
-  }
-} else {
-  try {
-    initializeAppCheck(app, {
-      provider: new ReCaptchaV3Provider('YOUR_RECAPTCHA_SITE_KEY'),
-      isTokenAutoRefreshEnabled: true
-    });
-  } catch (err) {
-    console.warn('App Check initialization failed:', err);
-    showNotification('App verification unavailable. Some features may be limited.', 'warning');
   }
 }
 
