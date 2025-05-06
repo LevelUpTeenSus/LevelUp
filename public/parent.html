@@ -15,8 +15,28 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div id="board"></div>
-  <!-- Parent controls will be rendered here -->
+  <div id="loginModal" class="modal">
+    <input id="emailInput" placeholder="Email" />
+    <input id="passwordInput" placeholder="Password" type="password" />
+    <button id="loginBtn">Login</button>
+    <button id="registerBtn">Register</button>
+    <button id="googleBtn">Sign in with Google</button>
+  </div>
+
+  <div id="board">
+    <div id="kidBar" class="kid-bar">
+      <select id="kidSelect"></select>
+      <button id="addKidBtn">Add Kid</button>
+      <button id="renameKidBtn">Rename</button>
+      <button id="deleteKidBtn">Delete</button>
+      <button id="undoBtn">Undo</button>
+      <button id="redoBtn">Redo</button>
+      <button id="inviteBtn">Invite</button>
+      <span id="userEmail"></span>
+      <button id="logoutBtn">Logout</button>
+    </div>
+  </div>
+
   <script type="module">
     import { initializeParentApp } from '/script.js';
     initializeParentApp();

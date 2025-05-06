@@ -189,18 +189,7 @@ function waitForAuthState() {
  * @param {Object} elements - DOM elements
  */
 function resetUIElements(elements) {
-  const {
-    loginBtn, registerBtn, googleBtn, logoutBtn, inviteBtn, addKidBtn,
-    renameKidBtn, deleteKidBtn, kidBar, board, loginModal
-  } = elements;
-  // Default hidden state
-  [logoutBtn, inviteBtn, addKidBtn, renameKidBtn, deleteKidBtn, kidBar].forEach(el => {
-    if (el) el.style.display = 'none';
-  });
-  // Default visible state
-  [loginBtn, registerBtn, googleBtn].forEach(el => {
-    if (el) el.style.display = '';
-  });
+  const { board, loginModal } = elements;
   if (loginModal) loginModal.style.display = 'flex';
   // Do NOT clear the entire board; only clear the content-area if present
   if (board) {
@@ -268,35 +257,7 @@ function initializeApp({ isChild }) {
           throw new Error(`Invalid role: ${userRole}`);
         }
         if (loginModal) loginModal.style.display = 'none';
-        // UI controls based on isChild
-        if (isChild) {
-          if (elements.loginBtn) elements.loginBtn.style.display = 'none';
-          if (elements.registerBtn) elements.registerBtn.style.display = 'none';
-          if (elements.googleBtn) elements.googleBtn.style.display = 'none';
-          if (elements.inviteBtn) elements.inviteBtn.style.display = 'none';
-          if (elements.addKidBtn) elements.addKidBtn.style.display = 'none';
-          if (elements.renameKidBtn) elements.renameKidBtn.style.display = 'none';
-          if (elements.deleteKidBtn) elements.deleteKidBtn.style.display = 'none';
-          if (elements.kidBar) elements.kidBar.style.display = 'none';
-          if (elements.logoutBtn) elements.logoutBtn.style.display = '';
-          // Ensure the kidSelect is hidden for child view
-          if (elements.kidSelect) elements.kidSelect.style.display = 'none';
-        } else {
-          if (elements.loginBtn) elements.loginBtn.style.display = 'none';
-          if (elements.registerBtn) elements.registerBtn.style.display = 'none';
-          if (elements.googleBtn) elements.googleBtn.style.display = 'none';
-          if (elements.logoutBtn) elements.logoutBtn.style.display = '';
-          if (elements.inviteBtn) elements.inviteBtn.style.display = '';
-          if (elements.addKidBtn) elements.addKidBtn.style.display = '';
-          if (elements.renameKidBtn) elements.renameKidBtn.style.display = '';
-          if (elements.deleteKidBtn) elements.deleteKidBtn.style.display = '';
-          if (elements.kidBar) elements.kidBar.style.display = 'flex';
-          // Ensure the kidSelect is visible for parent view
-          if (elements.kidSelect) elements.kidSelect.style.display = '';
-        }
-        // Shared top bar controls logic (ensure always initialized)
         if (elements.userEmail) elements.userEmail.textContent = user.email;
-        if (elements.logoutBtn) elements.logoutBtn.style.display = '';
         // Undo/Redo buttons logic (if present in DOM)
         if (elements.undoBtn) elements.undoBtn.style.display = '';
         if (elements.redoBtn) elements.redoBtn.style.display = '';
@@ -415,14 +376,6 @@ function initializeApp({ isChild }) {
  * @param {Object} elements
  */
 async function initParentDashboard(userId, elements) {
-  // Ensure parent controls are visible
-  if (elements.kidSelect) elements.kidSelect.style.display = '';
-  if (elements.addKidBtn) elements.addKidBtn.style.display = '';
-  if (elements.renameKidBtn) elements.renameKidBtn.style.display = '';
-  if (elements.deleteKidBtn) elements.deleteKidBtn.style.display = '';
-  if (elements.inviteBtn) elements.inviteBtn.style.display = '';
-  if (elements.logoutBtn) elements.logoutBtn.style.display = '';
-
   const { user } = await waitForAuthState();
   if (!user || user.uid !== userId) {
     showNotification('Authentication required', 'error');
@@ -452,21 +405,6 @@ async function initParentDashboard(userId, elements) {
  * @param {Object} elements
  */
 async function initChildDashboard(userId, elements) {
-  // Hide parent-only controls for children
-  if (elements.kidSelect) elements.kidSelect.style.display = 'none';
-  if (elements.addKidBtn) elements.addKidBtn.style.display = 'none';
-  if (elements.renameKidBtn) elements.renameKidBtn.style.display = 'none';
-  if (elements.deleteKidBtn) elements.deleteKidBtn.style.display = 'none';
-  if (elements.inviteBtn) elements.inviteBtn.style.display = 'none';
-
-  // Hide sign-in controls
-  if (elements.loginBtn) elements.loginBtn.style.display = 'none';
-  if (elements.registerBtn) elements.registerBtn.style.display = 'none';
-  if (elements.googleBtn) elements.googleBtn.style.display = 'none';
-
-  // Ensure logout remains visible
-  if (elements.logoutBtn) elements.logoutBtn.style.display = '';
-
   const { user } = await waitForAuthState();
   if (!user || user.uid !== userId) {
     showNotification('Authentication required', 'error');
@@ -862,14 +800,10 @@ function buildBoard(elements) {
   }
   contentArea.innerHTML = '';
 
-  // Show static kidBar and bind handlers using destructured variables
   if (userRole === 'parent') {
     if (kidBar) {
-      kidBar.style.display = 'flex';
       initKidBar({ kidSelect, addKidBtn, renameKidBtn, deleteKidBtn, undoBtn, redoBtn });
     }
-  } else {
-    if (kidBar) kidBar.style.display = 'none';
   }
 
   if (!data || !store) {
@@ -1361,12 +1295,6 @@ function buildBoardWithUserData() {
  */
 function buildBoardChild(elements) {
   buildBoard(elements);
-  // Handle login/register/google/logout buttons using elements
-  const { loginBtn, registerBtn, googleBtn, logoutBtn } = elements;
-  if (loginBtn) loginBtn.style.display = 'none';
-  if (registerBtn) registerBtn.style.display = 'none';
-  if (googleBtn) googleBtn.style.display = 'none';
-  if (logoutBtn) logoutBtn.style.display = '';
   // Remove edit/move/add/undo/redo buttons only if not child or if editing is restricted
   if (elements.board && userRole === 'child') {
     document.querySelectorAll('.add-btn, .move-btn, button.modify, .undo-btn, .redo-btn').forEach(btn => btn.remove());
