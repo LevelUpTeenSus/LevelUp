@@ -213,6 +213,7 @@ function initializeApp(elements) {
         } else {
           await initChildDashboard(user.uid, elements);
         }
+        buildBoard();
       } catch (e) {
         handleError(e, 'Failed to initialize dashboard');
         if (e.code === 'auth/network-request-failed' || e.code === 'auth/invalid-credential') {
@@ -236,6 +237,7 @@ function initializeApp(elements) {
       addKidBtn.style.display = 'none';
       renameKidBtn.style.display = 'none';
       deleteKidBtn.style.display = 'none';
+      buildBoard();
     }
   });
 
