@@ -312,6 +312,7 @@ function initializeApp(elements) {
         const code = Math.random().toString(36).substring(2, 8).toUpperCase();
         await setDoc(doc(db, CONFIG.COLLECTIONS.INVITES, code), { 
           parentUid: auth.currentUser.uid,
+          kidName: store.currentKid,
           createdAt: new Date(),
           expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
         });
@@ -371,17 +372,23 @@ async function initChildDashboard(userId, elements) {
     const userRef = doc(db, CONFIG.COLLECTIONS.USERS, userId);
     const userSnap = await getDoc(userRef);
     let parentUid = userSnap.exists() && userSnap.data().parentUid;
-    
+    let kidName = null;
+
     if (!parentUid) {
-      parentUid = await promptForInviteCode();
-      if (!parentUid) {
+      const invite = await promptForInviteCode();
+      if (!invite) {
         showNotification('No valid invite code provided', 'error');
         return;
       }
+      parentUid = invite.parentUid;
+      kidName = invite.kidName;
       await setDoc(userRef, { parentUid }, { merge: true });
     }
-    
+
     await loadStore(parentUid);
+    if (kidName) {
+      store.currentKid = kidName;
+    }
     data = store.profiles[store.currentKid];
     buildBoardChild(elements);
     loadChildStreak(userId, elements);
@@ -392,7 +399,7 @@ async function initChildDashboard(userId, elements) {
 
 /**
  * Prompts for invite code via modal.
- * @returns {Promise<string|null>}
+ * @returns {Promise<{parentUid: string, kidName: string}|null>}
  */
 async function promptForInviteCode() {
   return new Promise((resolve) => {
@@ -416,13 +423,13 @@ async function promptForInviteCode() {
         const invRef = doc(db, CONFIG.COLLECTIONS.INVITES, code);
         const invSnap = await getDoc(invRef);
         if (invSnap.exists() && !invSnap.data().childUid) {
-          const { parentUid, expiresAt } = invSnap.data();
+          const { parentUid, kidName, expiresAt } = invSnap.data();
           if (expiresAt.toDate() < new Date()) {
             showNotification('Invite code expired', 'error');
           } else {
             await setDoc(invRef, { childUid: auth.currentUser.uid }, { merge: true });
             modal.remove();
-            resolve(parentUid);
+            resolve({ parentUid, kidName });
           }
         } else {
           showNotification('Invalid or used invite code', 'error');
@@ -775,6 +782,9 @@ function buildBoard() {
   attachEvents();
   updateAllTiers();
 
+  // Retrieve static button handlers
+  const inviteBtn = document.getElementById('inviteBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
   // Generate controls programmatically to avoid hidden static elements
   let controls = board.querySelector('.controls');
   if (!controls) {
@@ -787,11 +797,11 @@ function buildBoard() {
   // Ensure handlers and DOM references are available
   // (addKid, renameKid, deleteKid, inviteBtn, logoutBtn assumed in scope)
   const controlConfigs = [
-    { id: 'invite', label: 'Invite Child', show: userRole === 'parent', onClick: () => inviteBtn.click() },
+    { id: 'invite', label: 'Invite Child', show: userRole === 'parent', onClick: () => inviteBtn && inviteBtn.click() },
     { id: 'addKid', label: 'Add Profile', show: userRole === 'parent', onClick: () => addKid() },
     { id: 'renameKid', label: 'Rename Profile', show: userRole === 'parent', onClick: () => renameKid() },
     { id: 'deleteKid', label: 'Delete Profile', show: userRole === 'parent', onClick: () => deleteKid() },
-    { id: 'logout', label: 'Log Out', show: true, onClick: () => logoutBtn.click() }
+    { id: 'logout', label: 'Log Out', show: true, onClick: () => logoutBtn && logoutBtn.click() }
   ];
 
   controlConfigs.forEach(cfg => {
