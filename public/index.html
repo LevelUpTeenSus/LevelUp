@@ -26,12 +26,28 @@
       <h2>Login or Register</h2>
       <input id="emailInput" type="email" placeholder="Email" aria-label="Email" />
       <input id="passwordInput" type="password" placeholder="Password" aria-label="Password" />
+      <div>
+        <label>
+          <input type="checkbox" id="isChildCheckbox">
+          I am a child (have an invite code)
+        </label>
+      </div>
+      <div id="inviteCodeContainer" style="display:none;">
+        <input type="text" id="inviteInput" placeholder="Enter invite code" aria-label="Invite code"/>
+      </div>
       <div class="login-actions">
         <button id="loginBtn" aria-label="Log in with email and password">Login</button>
         <button id="registerBtn" aria-label="Register a new account">Register</button>
         <button id="googleBtn" aria-label="Sign in with Google account">Sign in with Google</button>
       </div>
     </div>
+    <script>
+      const isChildCheckbox = document.getElementById('isChildCheckbox');
+      const inviteCodeContainer = document.getElementById('inviteCodeContainer');
+      isChildCheckbox.addEventListener('change', () => {
+        inviteCodeContainer.style.display = isChildCheckbox.checked ? 'block' : 'none';
+      });
+    </script>
   </div>
 
   <main id="board" role="main">
@@ -41,7 +57,7 @@
       <div class="level-section"></div>
     </div>
     <div id="kidBar" role="navigation" aria-label="Kid selection and controls">
-      <select id="kidSelect" aria-label="Select Kid"></select>
+      <select id="kidSelect" aria-label="Select Kid" style="display:none"></select>
       <button id="addKidBtn" aria-label="Add a new kid">Add Kid</button>
       <button id="renameKidBtn" aria-label="Rename selected kid">Rename Kid</button>
       <button id="deleteKidBtn" aria-label="Delete selected kid">Delete Kid</button>

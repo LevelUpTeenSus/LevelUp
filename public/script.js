@@ -669,15 +669,6 @@ function initKidBar({ kidSelect, addKidBtn, renameKidBtn, deleteKidBtn, undoBtn,
   if (redoBtn) redoBtn.onclick = redo;
 }
 
-/**
- * Refreshes kid select dropdown.
- */
-function refreshKidSelect() {
-  const kidSelect = document.getElementById('kidSelect');
-  if (!kidSelect) return;
-  kidSelect.innerHTML = '';
-  Object.keys(store.profiles).forEach(name => kidSelect.add(new Option(name, name)));
-}
 
 /**
  * Adds a new kid.
