@@ -104,9 +104,6 @@ document.addEventListener('DOMContentLoaded', () => {
     addKidBtn: document.getElementById('addKidBtn'),
     renameKidBtn: document.getElementById('renameKidBtn'),
     deleteKidBtn: document.getElementById('deleteKidBtn'),
-    undoBtn: document.getElementById('undoBtn'),
-    redoBtn: document.getElementById('redoBtn'),
-    fileInput: document.getElementById('fileInput'),
     notifications: document.getElementById('notifications'),
     modal: document.getElementById('modal'),
     editInput: document.getElementById('editInput'),
@@ -182,11 +179,10 @@ function resetUIElements(elements) {
  */
 function initializeApp(elements) {
   const {
-    board, kidSelect, addKidBtn, renameKidBtn, deleteKidBtn, undoBtn, redoBtn,
-    exportBtn, importBtn, fileInput, notifications, modal, editInput, saveBtn,
+    board, kidSelect, addKidBtn, renameKidBtn, deleteKidBtn,
+    notifications, modal, editInput, saveBtn,
     deleteBtn, cancelBtn, loginModal, emailInput, passwordInput, loginBtn,
-    registerBtn, googleBtn, userEmail, logoutBtn, inviteBtn, kidBar, todoList,
-    masteredList
+    registerBtn, googleBtn, userEmail, logoutBtn, inviteBtn, kidBar
   } = elements;
 
   // Update isMobile on viewport changes
@@ -200,7 +196,11 @@ function initializeApp(elements) {
   onAuthStateChanged(auth, async (user) => {
     if (user) {
       try {
-        await user.getIdToken(true);
+        try {
+          await user.getIdToken(true);
+        } catch (e) {
+          console.warn('Token refresh failed, continuing with existing session:', e);
+        }
         const roleRef = doc(db, CONFIG.COLLECTIONS.ROLES, user.uid);
         let roleSnap = await getDoc(roleRef);
         if (!roleSnap.exists()) {
