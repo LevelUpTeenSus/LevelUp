@@ -2,42 +2,38 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Each user can read/write their own role document
+    // Role documents: both 'userRoles' and 'roles' collections
     match /userRoles/{userId} {
       allow read, write: if request.auth != null
                          && request.auth.uid == userId;
     }
-
-    // Alias for roles: allow users to read/write their own role document
     match /roles/{userId} {
       allow read, write: if request.auth != null
                          && request.auth.uid == userId;
     }
 
-    // Each user can read/write their own store under 'users'
+    // User store documents ('users' and 'stores' collections)
     match /users/{userId} {
       allow read, write: if request.auth != null
                          && request.auth.uid == userId;
     }
-
-    // Each user can read/write their own store under 'stores'
     match /stores/{userId} {
       allow read, write: if request.auth != null
                          && request.auth.uid == userId;
     }
 
-    // Invitations: parents create; child claims; both can read
+    // Invitations
     match /invitations/{code} {
-      // Parent creates invite tied to their UID
+      // Parents can create invites for their own kid
       allow create: if request.auth != null
-                    && get(/databases/$(database)/documents/userRoles/$(request.auth.uid)).data.role == 'parent'
+                    && get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.role == 'parent'
                     && request.resource.data.parentUid == request.auth.uid;
 
       // Parents (owner) or claimed child can read
       allow read: if request.auth != null
                   && (
-                    (get(/databases/$(database)/documents/userRoles/$(request.auth.uid)).data.role == 'parent'
-                      && resource.data.parentUid == request.auth.uid)
+                    (get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.role == 'parent'
+                     && resource.data.parentUid == request.auth.uid)
                     || resource.data.childUid == request.auth.uid
                   );
 
@@ -48,32 +44,30 @@ service cloud.firestore {
 
       // Parent who created can delete
       allow delete: if request.auth != null
-                    && get(/databases/$(database)/documents/userRoles/$(request.auth.uid)).data.role == 'parent'
+                    && get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.role == 'parent'
                     && resource.data.parentUid == request.auth.uid;
     }
 
-    // Child activity logs: children create their own, parents can read their child’s
-    match /childActivity/{activityId} {
+    // Child activity logs
+    match /childActivity/{docId} {
       allow create: if request.auth != null
                     && request.resource.data.childUid == request.auth.uid;
-
       allow read: if request.auth != null
                   && (
                     resource.data.childUid == request.auth.uid
                     || (
-                      get(/databases/$(database)/documents/userRoles/$(request.auth.uid)).data.role == 'parent'
-                      && get(/databases/$(database)/documents/users/$(resource.data.childUid)).data.parentUid == request.auth.uid
-                    )
+                       get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.role == 'parent'
+                       && get(/databases/$(database)/documents/users/$(resource.data.childUid)).data.parentUid == request.auth.uid
+                     )
                   );
-
       allow update, delete: if false;
     }
 
-    // List of all items (responsibilities/privileges) — read-only for authenticated users
+    // Items collection
     match /items/{itemId} {
       allow read: if request.auth != null;
       allow write: if request.auth != null
-                    && get(/databases/$(database)/documents/userRoles/$(request.auth.uid)).data.role == 'parent';
+                    && get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.role == 'parent';
     }
   }
 }
