@@ -1,1 +1,57 @@
-rules_version = '2'; service cloud.firestore { match /databases/{database}/documents { match /users/{userId}/{document=**} { allow read, write: if request.auth != null && request.auth.uid == userId; } match /responsibilities/{itemId} { allow read: if true; allow write: if request.auth != null; } } }
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Each user may read/write only their own profile/store
+    match /users/{userId} {
+      allow read, write: if request.auth != null
+                      && request.auth.uid == userId;
+    }
+    // User roles (parent or child) tied to UID
+    match /userRoles/{userId} {
+      allow read, write: if request.auth != null
+                      && request.auth.uid == userId;
+    }
+    // Invitation codes for linking children to a parent
+    match /invitations/{code} {
+      // Only a parent may create an invitation and must set parentUid to their own UID
+      allow create: if request.auth != null
+                 && get(/databases/$(database)/documents/userRoles/$(request.auth.uid)).data.role == 'parent'
+                 && request.resource.data.parentUid == request.auth.uid;
+      // Parent who created it, or the child who has claimed it, may read
+      allow read: if request.auth != null
+               && (
+                    // Parent view
+                    (get(/databases/$(database)/documents/userRoles/$(request.auth.uid)).data.role == 'parent'
+                     && resource.data.parentUid == request.auth.uid)
+                    ||
+                    // Child view after claim
+                    (resource.data.childUid == request.auth.uid)
+                  );
+      // A child may update exactly once to claim the code (set childUid to their own UID)
+      allow update: if request.auth != null
+                && !('childUid' in resource.data)
+                && request.resource.data.childUid == request.auth.uid;
+      // Only the parent who created the invitation may delete it
+      allow delete: if request.auth != null
+                 && get(/databases/$(database)/documents/userRoles/$(request.auth.uid)).data.role == 'parent'
+                 && resource.data.parentUid == request.auth.uid;
+    }
+    // Logged check‑offs for each child
+    match /childActivity/{activityId} {
+      // Children may only write their own activity entries
+      allow create: if request.auth != null
+                 && request.resource.data.childUid == request.auth.uid;
+      // Only the child may read their own activity
+      allow read: if request.auth != null
+               && resource.data.childUid == request.auth.uid;
+      // No one may update or delete once written
+      allow update, delete: if false;
+    }
+    // Responsibilities listing
+    match /responsibilities/{itemId} {
+      allow read: if true;
+      allow write: if request.auth != null
+                   && get(/databases/$(database)/documents/userRoles/$(request.auth.uid)).data.role == 'parent';
+    }
+  }
+}

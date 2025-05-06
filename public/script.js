@@ -16,7 +16,10 @@ import {
   collection,
   getDocs,
   connectFirestoreEmulator,
-  setLogLevel
+  setLogLevel,
+  query,
+  where,
+  orderBy
 } from 'firebase/firestore';
 import { app } from './firebaseConfig.js';
 
@@ -66,6 +69,9 @@ let actionHistory = [];
 let actionHistoryIndex = -1;
 let isMobile = window.matchMedia('(max-width: 768px)').matches;
 
+// User role: 'parent' or 'child'
+let userRole = null;
+
 // Update isMobile on viewport changes
 const mediaQuery = window.matchMedia('(max-width: 768px)');
 mediaQuery.addEventListener('change', (e) => {
@@ -104,12 +110,19 @@ const todoList = document.getElementById('todo-list');
 const masteredList = document.getElementById('mastered-list');
 
 // Authentication
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
   if (user) {
+    // Determine user role and initialize dashboard
+    const roleSnap = await getDoc(doc(db, 'userRoles', user.uid));
+    userRole = roleSnap.exists() ? roleSnap.data().role : 'parent';
     loginModal.style.display = 'none';
-    kidBar.style.display = 'flex';
+    kidBar.style.display = userRole === 'parent' ? 'flex' : 'none';
     userEmail.textContent = user.email;
-    init(user.uid);
+    if (userRole === 'parent') {
+      initParentDashboard(user.uid);
+    } else {
+      initChildDashboard(user.uid);
+    }
   } else {
     loginModal.style.display = 'flex';
     kidBar.style.display = 'none';
@@ -862,10 +875,31 @@ function replaceText(oldText, newText, cat) {
 }
 
 // Initialization
-async function init(userId) {
+async function initParentDashboard(userId) {
   await loadStore(userId);
   initKidBar();
   await buildBoardWithUserData(userId);
+}
+
+async function initChildDashboard(userId) {
+  // Load store from linked parent account
+  // Prompt child for invite code if not already linked
+  const code = prompt('Enter invite code from your parent');
+  const invSnap = await getDoc(doc(db, 'invitations', code));
+  if (!invSnap.exists() || (invSnap.data().childUid && invSnap.data().childUid !== userId)) {
+    showNotification('Invalid or already used invite code', 'error');
+    return;
+  }
+  // Link child to parent store
+  const parentUid = invSnap.data().parentUid;
+  // Record linkage
+  await setDoc(doc(db, 'invitations', code), { childUid: userId }, { merge: true });
+  // Load parent's store
+  await loadStore(parentUid);
+  data = store.profiles[store.currentKid];
+  // Build board in read-only mode
+  buildBoardChild();
+  loadChildStreak(userId);
 }
 
 async function buildBoardWithUserData(userId) {
@@ -876,4 +910,30 @@ async function buildBoardWithUserData(userId) {
     showNotification('Failed to build board', 'error');
     buildBoard();
   }
+}
+
+function buildBoardChild() {
+  buildBoard();
+  // Disable all add/edit/delete/move controls
+  document.querySelectorAll('.add-btn, .move-btn, button.modify, .undo-btn, .redo-btn').forEach(btn => btn.remove());
+  // Remove double-click editing
+  document.querySelectorAll('li span').forEach(span => span.ondblclick = null);
+}
+
+async function loadChildStreak(childUid) {
+  // Fetch completion dates
+  const snaps = await getDocs(query(collection(db, 'childActivity'), where('childUid', '==', childUid), orderBy('date', 'desc')));
+  let streak = 0;
+  const today = new Date();
+  for (let snap of snaps.docs) {
+    const date = snap.data().date.toDate();
+    const diffDays = Math.round((today - date) / (1000*60*60*24));
+    if (diffDays === streak) streak++;
+    else break;
+  }
+  const topHeader = document.querySelector('.top-header');
+  const streakEl = document.createElement('div');
+  streakEl.className = 'streak-display';
+  streakEl.textContent = `🔥 Current Streak: ${streak} day${streak !== 1 ? 's' : ''}`;
+  topHeader.appendChild(streakEl);
 }
