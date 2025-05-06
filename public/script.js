@@ -197,6 +197,15 @@ function initializeApp(elements) {
           throw new Error(`Invalid role: ${userRole}`);
         }
         loginModal.style.display = 'none';
+        // Hide login/register and show logout/invite/add-kid controls
+        loginBtn.style.display = 'none';
+        registerBtn.style.display = 'none';
+        googleBtn.style.display = 'none';
+        logoutBtn.style.display = '';
+        inviteBtn.style.display = userRole === 'parent' ? '' : 'none';
+        addKidBtn.style.display = userRole === 'parent' ? '' : 'none';
+        renameKidBtn.style.display = userRole === 'parent' ? '' : 'none';
+        deleteKidBtn.style.display = userRole === 'parent' ? '' : 'none';
         kidBar.style.display = userRole === 'parent' ? 'flex' : 'none';
         userEmail.textContent = user.email;
         if (userRole === 'parent') {
@@ -218,6 +227,15 @@ function initializeApp(elements) {
       board.innerHTML = '<h1>LevelUp</h1><p>Please log in to continue.</p>';
       todoList.innerHTML = '<li>Please log in to see your to-do responsibilities.</li>';
       masteredList.innerHTML = '<li>Please log in to see your mastered responsibilities.</li>';
+      // Show login/register, hide logout/invite/add-kid controls
+      loginBtn.style.display = '';
+      registerBtn.style.display = '';
+      googleBtn.style.display = '';
+      logoutBtn.style.display = 'none';
+      inviteBtn.style.display = 'none';
+      addKidBtn.style.display = 'none';
+      renameKidBtn.style.display = 'none';
+      deleteKidBtn.style.display = 'none';
     }
   });
 
