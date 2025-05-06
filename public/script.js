@@ -815,7 +815,6 @@ function buildBoard(elements) {
   const topHeader = document.createElement('div');
   topHeader.className = 'top-header';
   topHeader.innerHTML = `
-    <h1>LevelUp</h1>
     <h2 class="child-name">${store.currentKid}</h2>
   `;
   // Level section logic
