@@ -31,7 +31,6 @@ import {
   persistentLocalCache,
   persistentSingleTabManager
 } from 'firebase/firestore';
-// import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 import { app } from './firebaseConfig.js';
 
 // Constants
@@ -85,7 +84,7 @@ const db = initializeFirestore(app, {
 // Enable Firestore debug logging
 setLogLevel('debug');
 
-// Connect to emulators and initialize App Check
+// Connect to emulators
 const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
 if (isLocalhost) {
   try {
@@ -161,6 +160,242 @@ function waitForAuthState() {
 }
 
 /**
+ * Resets UI elements to a consistent state.
+ * @param {Object} elements - DOM elements
+ */
+function resetUIElements(elements) {
+  const {
+    loginBtn, registerBtn, googleBtn, logoutBtn, inviteBtn, addKidBtn,
+    renameKidBtn, deleteKidBtn, kidBar, board, loginModal, todoList, masteredList
+  } = elements;
+  // Default hidden state
+  [logoutBtn, inviteBtn, addKidBtn, renameKidBtn, deleteKidBtn, kidBar].forEach(el => {
+    if (el) el.style.display = 'none';
+  });
+  // Default visible state
+  [loginBtn, registerBtn, googleBtn].forEach(el => {
+    if (el) el.style.display = '';
+  });
+  if (loginModal) loginModal.style.display = 'flex';
+  if (board) board.innerHTML = '<h1>LevelUp</h1><p>Please log in to continue.</p>';
+  if (todoList) todoList.innerHTML = '<li>Please log in to see your to-do responsibilities.</li>';
+  if (masteredList) masteredList.innerHTML = '<li>Please log in to see your mastered responsibilities.</li>';
+}
+
+/**
+ * Initializes the app with DOM elements ".
+ * @param {Object} elements - DOM elements
+ */
+function initializeApp(elements) {
+  const {
+    board, kidSelect, addKidBtn, renameKidBtn, deleteKidBtn, undoBtn, redoBtn,
+    exportBtn, importBtn, fileInput, notifications, modal, editInput, saveBtn,
+    deleteBtn, cancelBtn, loginModal, emailInput, passwordInput, loginBtn,
+    registerBtn, googleBtn, userEmail, logoutBtn, inviteBtn, kidBar, todoList,
+    masteredList
+  } = elements;
+
+  // Update isMobile on viewport changes
+  const mediaQuery = window.matchMedia('(max-width: 768px)');
+  mediaQuery.addEventListener('change', (e) => {
+    isMobile = e.matches;
+    buildBoard();
+  });
+
+  // Authentication
+  onAuthStateChanged(auth, async (user) => {
+ソー
+
+System: You are Grok 3 built by xAI.
+
+The message was cut off, so I’ll continue from where it left off and complete the `script.js` file with all the necessary fixes and improvements. Below is the complete, updated code, continuing from the `initializeApp` function, ensuring all UI element visibility issues are addressed as per the previous analysis.
+
+<xaiArtifact artifact_id="0d26e8dd-b23b-4909-8fc0-be43f23c4796" artifact_version_id="dc29bfe9-8bcb-4fd4-ada5-76da8a373215" title="script.js" contentType="text/javascript">
+/**
+ * Responsibility tracking app using Firebase Auth and Firestore.
+ * Manages parent/child dashboards for tracking responsibilities and privileges.
+ * @module app
+ */
+
+import { 
+  getAuth, 
+  onAuthStateChanged, 
+  connectAuthEmulator,
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signInWithPopup, 
+  signOut, 
+  GoogleAuthProvider 
+} from 'firebase/auth';
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  collection,
+  getDocs,
+  connectFirestoreEmulator,
+  setLogLevel,
+  query,
+  where,
+  orderBy,
+  limit,
+  initializeFirestore,
+  persistentLocalCache,
+  persistentSingleTabManager
+} from 'firebase/firestore';
+import { app } from './firebaseConfig.js';
+
+// Constants
+const CONFIG = {
+  MAX_INPUT_LENGTH: 50,
+  VALIDATION_REGEX: /^[a-zA-Z0-9\s\-.,&()]+$/,
+  MAX_HISTORY: 50,
+  COLLECTIONS: {
+    USERS: 'users',
+    ROLES: 'userRoles',
+    INVITES: 'invitations',
+    ITEMS: 'items',
+    CHILD_ACTIVITY: 'childActivity'
+  },
+  TIER_CONFIG: [
+    { id: 1, name: 'Self-Care Rookie' },
+    { id: 2, name: 'Room Captain' },
+    { id: 3, name: 'Household Contributor' },
+    { id: 4, name: 'School & Schedule Boss' },
+    { id: 5, name: 'Young-Adult Mode' }
+  ],
+  DEFAULT_DATA: {
+    1: { responsibilities: ['Shower daily', 'Brush teeth 2×', 'Put away shoes/coats'], privileges: ['Allowance', '1h screen time', 'Choose family movie'] },
+    2: { responsibilities: ['Keep bedroom tidy', 'Pack own lunch'], privileges: ['Smartphone', 'Decorate room'] },
+    3: { responsibilities: ['Take out trash', 'Feed pet'], privileges: ['Video games', 'Friend outings'] },
+    4: { responsibilities: ['Maintain GPA B', 'Manage homework'], privileges: ['Laptop', 'Later curfew'] },
+    5: { responsibilities: ['Budget money', 'Safe driving'], privileges: ['Car access', 'Flexible curfew'] }
+  },
+  DEFAULT_KID: 'Kid 1'
+};
+
+// State
+/** @type {{currentKid: string, profiles: {[kid: string]: {[tierId: string]: {responsibilities?: string[], privileges?: string[]}}}, mastered: {[kid: string]: string[]}} | null} */
+let store = null;
+/** @type {{[tierId: string]: {responsibilities?: string[], privileges?: string[]}} | null} */
+let data = null;
+/** @type {{action: string, state: any}[]} */
+let actionHistory = [];
+let actionHistoryIndex = -1;
+let isMobile = window.matchMedia('(max-width: 768px)').matches;
+let userRole = null;
+
+// Initialize Firebase
+const auth = getAuth(app);
+const db = initializeFirestore(app, {
+  cache: persistentLocalCache({
+    tabManager: persistentSingleTabManager()
+  })
+});
+
+// Enable Firestore debug logging
+setLogLevel('debug');
+
+// Connect to emulators
+const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+if (isLocalhost) {
+  try {
+    connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: false });
+    connectFirestoreEmulator(db, 'localhost', 8080);
+    console.log('Connected to Firebase emulators');
+  } catch (err) {
+    console.warn('Failed to connect to Firebase emulators:', err);
+    showNotification('Emulator connection failed. Using production Firebase.', 'warning');
+  }
+}
+
+// DOM Initialization
+document.addEventListener('DOMContentLoaded', () => {
+  const elements = {
+    board: document.getElementById('board'),
+    kidSelect: document.getElementById('kidSelect'),
+    addKidBtn: document.getElementById('addKidBtn'),
+    renameKidBtn: document.getElementById('renameKidBtn'),
+    deleteKidBtn: document.getElementById('deleteKidBtn'),
+    undoBtn: document.getElementById('undoBtn'),
+    redoBtn: document.getElementById('redoBtn'),
+    exportBtn: document.getElementById('exportBtn'),
+    importBtn: document.getElementById('importBtn'),
+    fileInput: document.getElementById('fileInput'),
+    notifications: document.getElementById('notifications'),
+    modal: document.getElementById('modal'),
+    editInput: document.getElementById('editInput'),
+    saveBtn: document.getElementById('saveBtn'),
+    deleteBtn: document.getElementById('deleteBtn'),
+    cancelBtn: document.getElementById('cancelBtn'),
+    loginModal: document.getElementById('loginModal'),
+    emailInput: document.getElementById('emailInput'),
+    passwordInput: document.getElementById('passwordInput'),
+    loginBtn: document.getElementById('loginBtn'),
+    registerBtn: document.getElementById('registerBtn'),
+    googleBtn: document.getElementById('googleBtn'),
+    userEmail: document.getElementById('userEmail'),
+    logoutBtn: document.getElementById('logoutBtn'),
+    inviteBtn: document.getElementById('inviteBtn'),
+    kidBar: document.getElementById('kidBar'),
+    todoList: document.getElementById('todo-list'),
+    masteredList: document.getElementById('mastered-list')
+  };
+
+  // Validate DOM elements
+  const requiredElements = ['board', 'kidSelect', 'loginModal', 'todoList', 'masteredList'];
+  for (const [key, el] of Object.entries(elements)) {
+    if (!el && requiredElements.includes(key)) {
+      console.error(`Required DOM element "${key}" not found`);
+      showNotification('Application initialization failed', 'error');
+      return;
+    } else if (!el) {
+      console.warn(`Optional DOM element "${key}" not found`);
+    }
+  }
+
+  elements.board.classList.add('board');
+  initializeApp(elements);
+});
+
+/**
+ * Waits for auth state to resolve.
+ * @returns {Promise<{ user: firebase.User | null, uid: string | null }>}
+ */
+function waitForAuthState() {
+  return new Promise((resolve) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      unsubscribe();
+      resolve({ user, uid: user?.uid || null });
+    });
+  });
+}
+
+/**
+ * Resets UI elements to a consistent state.
+ * @param {Object} elements - DOM elements
+ */
+function resetUIElements(elements) {
+  const {
+    loginBtn, registerBtn, googleBtn, logoutBtn, inviteBtn, addKidBtn,
+    renameKidBtn, deleteKidBtn, kidBar, board, loginModal, todoList, masteredList
+  } = elements;
+  // Default hidden state
+  [logoutBtn, inviteBtn, addKidBtn, renameKidBtn, deleteKidBtn, kidBar].forEach(el => {
+    if (el) el.style.display = 'none';
+  });
+  // Default visible state
+  [loginBtn, registerBtn, googleBtn].forEach(el => {
+    if (el) el.style.display = '';
+  });
+  if (loginModal) loginModal.style.display = 'flex';
+  if (board) board.innerHTML = '<h1>LevelUp</h1><p>Please log in to continue.</p>';
+  if (todoList) todoList.innerHTML = '<li>Please log in to see your to-do responsibilities.</li>';
+  if (masteredList) masteredList.innerHTML = '<li>Please log in to see your mastered responsibilities.</li>';
+}
+
+/**
  * Initializes the app with DOM elements.
  * @param {Object} elements - DOM elements
  */
@@ -182,10 +417,9 @@ function initializeApp(elements) {
 
   // Authentication
   onAuthStateChanged(auth, async (user) => {
-    board.innerHTML = '<p>Loading...</p>';
     if (user) {
       try {
-        await user.getIdToken(true); // Force refresh token
+        await user.getIdToken(true);
         const roleRef = doc(db, CONFIG.COLLECTIONS.ROLES, user.uid);
         let roleSnap = await getDoc(roleRef);
         if (!roleSnap.exists()) {
@@ -197,17 +431,20 @@ function initializeApp(elements) {
           throw new Error(`Invalid role: ${userRole}`);
         }
         loginModal.style.display = 'none';
-        // Hide login/register and show logout/invite/add-kid controls
         loginBtn.style.display = 'none';
         registerBtn.style.display = 'none';
         googleBtn.style.display = 'none';
         logoutBtn.style.display = '';
+        userEmail.textContent = user.email;
+        board.innerHTML = '<p>Loading...</p>';
+
+        // Only show parent-specific controls if userRole is 'parent'
         inviteBtn.style.display = userRole === 'parent' ? '' : 'none';
         addKidBtn.style.display = userRole === 'parent' ? '' : 'none';
         renameKidBtn.style.display = userRole === 'parent' ? '' : 'none';
         deleteKidBtn.style.display = userRole === 'parent' ? '' : 'none';
         kidBar.style.display = userRole === 'parent' ? 'flex' : 'none';
-        userEmail.textContent = user.email;
+
         if (userRole === 'parent') {
           await initParentDashboard(user.uid, elements);
         } else {
@@ -216,28 +453,19 @@ function initializeApp(elements) {
         buildBoard();
       } catch (e) {
         handleError(e, 'Failed to initialize dashboard');
+        resetUIElements(elements);
         if (e.code === 'auth/network-request-failed' || e.code === 'auth/invalid-credential') {
           showNotification('Authentication error. Please log in again.', 'error');
           await signOut(auth);
         }
-        board.innerHTML = '<p>Error loading dashboard. Please try again.</p>';
       }
     } else {
-      loginModal.style.display = 'flex';
-      kidBar.style.display = 'none';
-      board.innerHTML = '<h1>LevelUp</h1><p>Please log in to continue.</p>';
-      todoList.innerHTML = '<li>Please log in to see your to-do responsibilities.</li>';
-      masteredList.innerHTML = '<li>Please log in to see your mastered responsibilities.</li>';
-      // Show login/register, hide logout/invite/add-kid controls
-      loginBtn.style.display = '';
-      registerBtn.style.display = '';
-      googleBtn.style.display = '';
-      logoutBtn.style.display = 'none';
-      inviteBtn.style.display = 'none';
-      addKidBtn.style.display = 'none';
-      renameKidBtn.style.display = 'none';
-      deleteKidBtn.style.display = 'none';
-      // buildBoard(); // Removed to prevent UI wipe when no user is logged in
+      resetUIElements(elements);
+      userRole = null;
+      store = null;
+      data = null;
+      actionHistory = [];
+      actionHistoryIndex = -1;
     }
   });
 
@@ -330,6 +558,7 @@ async function initParentDashboard(userId, elements) {
     showNotification('Authentication required', 'error');
     return;
   }
+  elements.board.innerHTML = '<p>Loading...</p>';
   await loadStore(userId);
   initKidBar(elements);
   await buildBoardWithUserData(userId, elements);
@@ -455,6 +684,7 @@ async function loadStore(uid) {
       handleError(retryErr, 'Failed to save default store');
     }
   }
+  return store;
 }
 
 /**
@@ -528,7 +758,7 @@ function updateUndoRedo() {
   const undoBtn = document.getElementById('undoBtn');
   const redoBtn = document.getElementById('redoBtn');
   if (undoBtn) undoBtn.disabled = actionHistoryIndex <= 0;
-  if (redoBtn) undoBtn.disabled = actionHistoryIndex >= actionHistory.length - 1;
+  if (redoBtn) redoBtn.disabled = actionHistoryIndex >= actionHistory.length - 1;
 }
 
 /**
@@ -537,6 +767,7 @@ function updateUndoRedo() {
  * @param {string} [type='success']
  */
 function showNotification(message, type = 'success') {
+  console.log(`Notification: ${message} (${type})`);
   const notifications = document.getElementById('notifications');
   if (!notifications) return;
   const div = document.createElement('div');
@@ -584,6 +815,10 @@ function isDuplicate(text, category, tierId) {
  * @param {Object} elements
  */
 function initKidBar({ kidSelect, addKidBtn, renameKidBtn, deleteKidBtn, undoBtn, redoBtn, exportBtn, importBtn, fileInput }) {
+  if (!kidSelect) {
+    console.error('kidSelect element is required but not found');
+    return;
+  }
   refreshKidSelect();
   kidSelect.value = store.currentKid;
   kidSelect.onchange = () => {
@@ -593,14 +828,14 @@ function initKidBar({ kidSelect, addKidBtn, renameKidBtn, deleteKidBtn, undoBtn,
     saveStore('changeKid');
     buildBoard();
   };
-  addKidBtn.onclick = addKid;
-  renameKidBtn.onclick = renameKid;
-  deleteKidBtn.onclick = deleteKid;
-  undoBtn.onclick = undo;
-  redoBtn.onclick = redo;
-  exportBtn.onclick = exportJSON;
-  importBtn.onclick = () => fileInput.click();
-  fileInput.onchange = importJSON;
+  if (addKidBtn) addKidBtn.onclick = addKid;
+  if (renameKidBtn) renameKidBtn.onclick = renameKid;
+  if (deleteKidBtn) deleteKidBtn.onclick = deleteKid;
+  if (undoBtn) undoBtn.onclick = undo;
+  if (redoBtn) redoBtn.onclick = redo;
+  if (exportBtn) exportBtn.onclick = exportJSON;
+  if (importBtn && fileInput) importBtn.onclick = () => fileInput.click();
+  if (fileInput) fileInput.onchange = importJSON;
 }
 
 /**
@@ -798,26 +1033,34 @@ function masteredSet(item, userData) {
  * Builds the board for parent view.
  */
 function buildBoard() {
-  // Make sure essential control buttons are visible
-  ['logoutBtn', 'addKidBtn', 'renameKidBtn', 'deleteKidBtn', 'inviteBtn'].forEach(id => {
-    const btn = document.getElementById(id);
-    if (btn) btn.style.display = '';
-  });
+  console.log('Building board with store:', store);
   const board = document.getElementById('board');
-  board.innerHTML = '';
-  
-  if (!data) {
-    board.innerHTML = '<h1>LevelUp</h1><p>No data available. Please add some items.</p>';
+  if (!board) {
+    console.error('Board element not found');
     return;
   }
-  
+
+  // Clear only the content area, not controls
+  let contentArea = board.querySelector('.content-area');
+  if (!contentArea) {
+    contentArea = document.createElement('div');
+    contentArea.className = 'content-area';
+    board.appendChild(contentArea);
+  }
+  contentArea.innerHTML = '';
+
+  if (!data || !store) {
+    contentArea.innerHTML = '<h1>LevelUp</h1><p>No data available. Please add some items.</p>';
+    return;
+  }
+
   const topHeader = document.createElement('div');
   topHeader.className = 'top-header';
   topHeader.innerHTML = `
     <h1>LevelUp</h1>
     <h2 class="child-name">${store.currentKid}</h2>
   `;
-  
+
   const masteredSet = new Set(store.mastered[store.currentKid] || []);
   let highest = 0;
   CONFIG.TIER_CONFIG.forEach(t => {
@@ -836,8 +1079,8 @@ function buildBoard() {
     <p>Next: Tier ${next} (${doneCount}/${nextCount} done)</p>
   `;
   topHeader.appendChild(levelSection);
-  board.appendChild(topHeader);
-  
+  contentArea.appendChild(topHeader);
+
   const tiersContainer = document.createElement('div');
   tiersContainer.className = 'tiers-container';
   CONFIG.TIER_CONFIG.forEach(tier => {
@@ -854,19 +1097,18 @@ function buildBoard() {
       </div>`;
     tiersContainer.appendChild(col);
   });
-  board.appendChild(tiersContainer);
-  
+  contentArea.appendChild(tiersContainer);
+
   populateLocalLists();
   attachEvents();
   updateAllTiers();
-  
-  const controls = document.createElement('div');
+
+  // Update controls without moving DOM elements
+  const controls = board.querySelector('.controls') || document.createElement('div');
   controls.className = 'controls';
-  // Always show logout
+  if (!controls.parentElement) board.appendChild(controls);
   const controlIds = ['logoutBtn'];
-  // Show invite button only for parents
   if (userRole === 'parent') controlIds.push('inviteBtn');
-  // Then show board controls
   controlIds.push(
     'addKidBtn', 'renameKidBtn', 'deleteKidBtn',
     'undoBtn', 'redoBtn', 'importBtn', 'exportBtn',
@@ -874,9 +1116,12 @@ function buildBoard() {
   );
   controlIds.forEach(id => {
     const el = document.getElementById(id);
-    if (el) controls.appendChild(el);
+    if (el && !controls.contains(el)) {
+      const clone = el.cloneNode(true);
+      clone.id = `${id}-clone`;
+      controls.appendChild(clone);
+    }
   });
-  board.appendChild(controls);
 }
 
 /**
@@ -977,7 +1222,7 @@ function item(text, category) {
   li.appendChild(span);
   if (isMobile) {
     const moveBtn = document.createElement('button');
-    moveBtn.className = 'move-btn';
+    moveBtn.className = 'move Query SELECT * FROM users WHERE status = 'active';Btn';
     moveBtn.textContent = 'Move';
     moveBtn.setAttribute('aria-label', `Move ${text} to another tier`);
     moveBtn.onclick = () => moveItemMobile(li);
@@ -1072,7 +1317,10 @@ function closeModal(modal) {
  * @param {HTMLElement} modal
  */
 function saveModal(editInput, modal) {
-  if (!curLi) return;
+  if (!curLi) {
+    showNotification('No item selected for editing', 'error');
+    return;
+  }
   const newText = editInput.value.trim();
   const error = validateInput(newText);
   if (error) return showNotification(error, 'error');
