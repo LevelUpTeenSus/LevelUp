@@ -717,6 +717,7 @@ function importJSON(e) {
 async function populateListsWithUserData(userData) {
   const todoList = document.getElementById('todo-list');
   const masteredList = document.getElementById('mastered-list');
+  if (!todoList || !masteredList) return;
   try {
     if (!userData?.store?.mastered?.[userData.store.currentKid]) {
       throw new Error('Invalid user data structure');
