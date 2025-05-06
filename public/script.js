@@ -780,6 +780,22 @@ function buildBoard() {
   }
   contentArea.innerHTML = '';
 
+  // Show static kidBar and bind handlers
+  const kidBar = document.getElementById('kidBar');
+  if (userRole === 'parent') {
+    kidBar.style.display = 'flex';
+    initKidBar({
+      kidSelect: document.getElementById('kidSelect'),
+      addKidBtn: document.getElementById('addKidBtn'),
+      renameKidBtn: document.getElementById('renameKidBtn'),
+      deleteKidBtn: document.getElementById('deleteKidBtn'),
+      undoBtn: document.getElementById('undoBtn'),
+      redoBtn: document.getElementById('redoBtn')
+    });
+  } else {
+    if (kidBar) kidBar.style.display = 'none';
+  }
+
   if (!data || !store) {
     contentArea.innerHTML = '<h1>LevelUp</h1><p>No data available. Please add some items.</p>';
     return;
@@ -833,64 +849,6 @@ function buildBoard() {
   populateLocalLists();
   attachEvents();
   updateAllTiers();
-
-  // Retrieve static button handlers
-  const inviteBtn = document.getElementById('inviteBtn');
-  const logoutBtn = document.getElementById('logoutBtn');
-  // Generate controls programmatically to avoid hidden static elements
-  let controls = board.querySelector('.controls');
-  if (!controls) {
-    controls = document.createElement('div');
-    controls.className = 'controls';
-    board.appendChild(controls);
-  }
-  controls.innerHTML = '';
-
-  // Add kidSelect dropdown for parents at the top of controls
-  const kidSelect = document.getElementById('kidSelect');
-  if (userRole === 'parent' && kidSelect) {
-    kidSelect.style.display = '';
-    controls.appendChild(kidSelect);
-    // Re-bind change handler for kidSelect to switch profiles
-    kidSelect.onchange = () => {
-      store.currentKid = kidSelect.value;
-      data = store.profiles[store.currentKid];
-      store.mastered[store.currentKid] = store.mastered[store.currentKid] || [];
-      saveStore('changeKid');
-      buildBoard();
-    };
-  }
-
-  // Existing controlConfigs block (invite uses generateInvite directly)
-  const controlConfigs = [
-    { id: 'invite', label: 'Invite Child', show: userRole === 'parent', onClick: generateInvite },
-    { id: 'addKid', label: 'Add Profile', show: userRole === 'parent', onClick: () => addKid() },
-    { id: 'renameKid', label: 'Rename Profile', show: userRole === 'parent', onClick: () => renameKid() },
-    { id: 'deleteKid', label: 'Delete Profile', show: userRole === 'parent', onClick: () => deleteKid() },
-    { id: 'logout', label: 'Log Out', show: true, onClick: () => logoutBtn && logoutBtn.click() }
-  ];
-
-  controlConfigs.forEach(cfg => {
-    if (!cfg.show) return;
-    const btn = document.createElement('button');
-    btn.id = cfg.id + 'ControlBtn';
-    btn.textContent = cfg.label;
-    btn.onclick = cfg.onClick;
-    controls.appendChild(btn);
-  });
-
-  // Refresh the kidSelect dropdown after controls generation (before displaying email)
-  refreshKidSelect();
-  // Set the select's value to the currentKid
-  if (kidSelect) {
-    kidSelect.value = store.currentKid;
-  }
-
-  // Display user email
-  const emailDisplay = document.createElement('span');
-  emailDisplay.className = 'user-email-display';
-  emailDisplay.textContent = auth.currentUser?.email || '';
-  controls.appendChild(emailDisplay);
 }
 
 /**
