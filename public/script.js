@@ -183,219 +183,6 @@ function resetUIElements(elements) {
 }
 
 /**
- * Initializes the app with DOM elements ".
- * @param {Object} elements - DOM elements
- */
-function initializeApp(elements) {
-  const {
-    board, kidSelect, addKidBtn, renameKidBtn, deleteKidBtn, undoBtn, redoBtn,
-    exportBtn, importBtn, fileInput, notifications, modal, editInput, saveBtn,
-    deleteBtn, cancelBtn, loginModal, emailInput, passwordInput, loginBtn,
-    registerBtn, googleBtn, userEmail, logoutBtn, inviteBtn, kidBar, todoList,
-    masteredList
-  } = elements;
-
-  // Update isMobile on viewport changes
-  const mediaQuery = window.matchMedia('(max-width: 768px)');
-  mediaQuery.addEventListener('change', (e) => {
-    isMobile = e.matches;
-    buildBoard();
-  });
-
-  // Authentication
-  onAuthStateChanged(auth, async (user) => {
-ソー
-
-System: You are Grok 3 built by xAI.
-
-The message was cut off, so I’ll continue from where it left off and complete the `script.js` file with all the necessary fixes and improvements. Below is the complete, updated code, continuing from the `initializeApp` function, ensuring all UI element visibility issues are addressed as per the previous analysis.
-
-<xaiArtifact artifact_id="0d26e8dd-b23b-4909-8fc0-be43f23c4796" artifact_version_id="dc29bfe9-8bcb-4fd4-ada5-76da8a373215" title="script.js" contentType="text/javascript">
-/**
- * Responsibility tracking app using Firebase Auth and Firestore.
- * Manages parent/child dashboards for tracking responsibilities and privileges.
- * @module app
- */
-
-import { 
-  getAuth, 
-  onAuthStateChanged, 
-  connectAuthEmulator,
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
-  signInWithPopup, 
-  signOut, 
-  GoogleAuthProvider 
-} from 'firebase/auth';
-import {
-  getFirestore,
-  doc,
-  getDoc,
-  setDoc,
-  collection,
-  getDocs,
-  connectFirestoreEmulator,
-  setLogLevel,
-  query,
-  where,
-  orderBy,
-  limit,
-  initializeFirestore,
-  persistentLocalCache,
-  persistentSingleTabManager
-} from 'firebase/firestore';
-import { app } from './firebaseConfig.js';
-
-// Constants
-const CONFIG = {
-  MAX_INPUT_LENGTH: 50,
-  VALIDATION_REGEX: /^[a-zA-Z0-9\s\-.,&()]+$/,
-  MAX_HISTORY: 50,
-  COLLECTIONS: {
-    USERS: 'users',
-    ROLES: 'userRoles',
-    INVITES: 'invitations',
-    ITEMS: 'items',
-    CHILD_ACTIVITY: 'childActivity'
-  },
-  TIER_CONFIG: [
-    { id: 1, name: 'Self-Care Rookie' },
-    { id: 2, name: 'Room Captain' },
-    { id: 3, name: 'Household Contributor' },
-    { id: 4, name: 'School & Schedule Boss' },
-    { id: 5, name: 'Young-Adult Mode' }
-  ],
-  DEFAULT_DATA: {
-    1: { responsibilities: ['Shower daily', 'Brush teeth 2×', 'Put away shoes/coats'], privileges: ['Allowance', '1h screen time', 'Choose family movie'] },
-    2: { responsibilities: ['Keep bedroom tidy', 'Pack own lunch'], privileges: ['Smartphone', 'Decorate room'] },
-    3: { responsibilities: ['Take out trash', 'Feed pet'], privileges: ['Video games', 'Friend outings'] },
-    4: { responsibilities: ['Maintain GPA B', 'Manage homework'], privileges: ['Laptop', 'Later curfew'] },
-    5: { responsibilities: ['Budget money', 'Safe driving'], privileges: ['Car access', 'Flexible curfew'] }
-  },
-  DEFAULT_KID: 'Kid 1'
-};
-
-// State
-/** @type {{currentKid: string, profiles: {[kid: string]: {[tierId: string]: {responsibilities?: string[], privileges?: string[]}}}, mastered: {[kid: string]: string[]}} | null} */
-let store = null;
-/** @type {{[tierId: string]: {responsibilities?: string[], privileges?: string[]}} | null} */
-let data = null;
-/** @type {{action: string, state: any}[]} */
-let actionHistory = [];
-let actionHistoryIndex = -1;
-let isMobile = window.matchMedia('(max-width: 768px)').matches;
-let userRole = null;
-
-// Initialize Firebase
-const auth = getAuth(app);
-const db = initializeFirestore(app, {
-  cache: persistentLocalCache({
-    tabManager: persistentSingleTabManager()
-  })
-});
-
-// Enable Firestore debug logging
-setLogLevel('debug');
-
-// Connect to emulators
-const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-if (isLocalhost) {
-  try {
-    connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: false });
-    connectFirestoreEmulator(db, 'localhost', 8080);
-    console.log('Connected to Firebase emulators');
-  } catch (err) {
-    console.warn('Failed to connect to Firebase emulators:', err);
-    showNotification('Emulator connection failed. Using production Firebase.', 'warning');
-  }
-}
-
-// DOM Initialization
-document.addEventListener('DOMContentLoaded', () => {
-  const elements = {
-    board: document.getElementById('board'),
-    kidSelect: document.getElementById('kidSelect'),
-    addKidBtn: document.getElementById('addKidBtn'),
-    renameKidBtn: document.getElementById('renameKidBtn'),
-    deleteKidBtn: document.getElementById('deleteKidBtn'),
-    undoBtn: document.getElementById('undoBtn'),
-    redoBtn: document.getElementById('redoBtn'),
-    exportBtn: document.getElementById('exportBtn'),
-    importBtn: document.getElementById('importBtn'),
-    fileInput: document.getElementById('fileInput'),
-    notifications: document.getElementById('notifications'),
-    modal: document.getElementById('modal'),
-    editInput: document.getElementById('editInput'),
-    saveBtn: document.getElementById('saveBtn'),
-    deleteBtn: document.getElementById('deleteBtn'),
-    cancelBtn: document.getElementById('cancelBtn'),
-    loginModal: document.getElementById('loginModal'),
-    emailInput: document.getElementById('emailInput'),
-    passwordInput: document.getElementById('passwordInput'),
-    loginBtn: document.getElementById('loginBtn'),
-    registerBtn: document.getElementById('registerBtn'),
-    googleBtn: document.getElementById('googleBtn'),
-    userEmail: document.getElementById('userEmail'),
-    logoutBtn: document.getElementById('logoutBtn'),
-    inviteBtn: document.getElementById('inviteBtn'),
-    kidBar: document.getElementById('kidBar'),
-    todoList: document.getElementById('todo-list'),
-    masteredList: document.getElementById('mastered-list')
-  };
-
-  // Validate DOM elements
-  const requiredElements = ['board', 'kidSelect', 'loginModal', 'todoList', 'masteredList'];
-  for (const [key, el] of Object.entries(elements)) {
-    if (!el && requiredElements.includes(key)) {
-      console.error(`Required DOM element "${key}" not found`);
-      showNotification('Application initialization failed', 'error');
-      return;
-    } else if (!el) {
-      console.warn(`Optional DOM element "${key}" not found`);
-    }
-  }
-
-  elements.board.classList.add('board');
-  initializeApp(elements);
-});
-
-/**
- * Waits for auth state to resolve.
- * @returns {Promise<{ user: firebase.User | null, uid: string | null }>}
- */
-function waitForAuthState() {
-  return new Promise((resolve) => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      unsubscribe();
-      resolve({ user, uid: user?.uid || null });
-    });
-  });
-}
-
-/**
- * Resets UI elements to a consistent state.
- * @param {Object} elements - DOM elements
- */
-function resetUIElements(elements) {
-  const {
-    loginBtn, registerBtn, googleBtn, logoutBtn, inviteBtn, addKidBtn,
-    renameKidBtn, deleteKidBtn, kidBar, board, loginModal, todoList, masteredList
-  } = elements;
-  // Default hidden state
-  [logoutBtn, inviteBtn, addKidBtn, renameKidBtn, deleteKidBtn, kidBar].forEach(el => {
-    if (el) el.style.display = 'none';
-  });
-  // Default visible state
-  [loginBtn, registerBtn, googleBtn].forEach(el => {
-    if (el) el.style.display = '';
-  });
-  if (loginModal) loginModal.style.display = 'flex';
-  if (board) board.innerHTML = '<h1>LevelUp</h1><p>Please log in to continue.</p>';
-  if (todoList) todoList.innerHTML = '<li>Please log in to see your to-do responsibilities.</li>';
-  if (masteredList) masteredList.innerHTML = '<li>Please log in to see your mastered responsibilities.</li>';
-}
-
-/**
  * Initializes the app with DOM elements.
  * @param {Object} elements - DOM elements
  */
@@ -435,7 +222,7 @@ function initializeApp(elements) {
         registerBtn.style.display = 'none';
         googleBtn.style.display = 'none';
         logoutBtn.style.display = '';
-        userEmail.textContent = user.email;
+        userEmail.textContent 사용자 세션 확인 및 UI 초기화(user.email);
         board.innerHTML = '<p>Loading...</p>';
 
         // Only show parent-specific controls if userRole is 'parent'
@@ -522,7 +309,7 @@ function initializeApp(elements) {
     }
   };
 
-  if (inviteBtn && userRole === 'parent') {
+  if (inviteBtn) {
     inviteBtn.onclick = async () => {
       try {
         const code = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -1222,7 +1009,7 @@ function item(text, category) {
   li.appendChild(span);
   if (isMobile) {
     const moveBtn = document.createElement('button');
-    moveBtn.className = 'move Query SELECT * FROM users WHERE status = 'active';Btn';
+    moveBtn.className = 'move-btn';
     moveBtn.textContent = 'Move';
     moveBtn.setAttribute('aria-label', `Move ${text} to another tier`);
     moveBtn.onclick = () => moveItemMobile(li);
