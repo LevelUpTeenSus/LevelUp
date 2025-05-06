@@ -141,6 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   elements.board.classList.add('board');
+  resetUIElements(elements);
   initializeApp(elements);
 });
 
@@ -841,7 +842,7 @@ function buildBoard() {
   const controls = board.querySelector('.controls') || document.createElement('div');
   controls.className = 'controls';
   if (!controls.parentElement) board.appendChild(controls);
-  const controlIds = ['loginBtn', 'registerBtn', 'googleBtn', 'logoutBtn'];
+  const controlIds = ['logoutBtn'];
   if (userRole === 'parent') controlIds.push('inviteBtn');
   controlIds.push(
     'addKidBtn', 'renameKidBtn', 'deleteKidBtn',
