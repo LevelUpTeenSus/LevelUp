@@ -79,6 +79,7 @@ mediaQuery.addEventListener('change', (e) => {
   buildBoard();
 });
 
+document.addEventListener('DOMContentLoaded', () => {
 // DOM Refs
 const board = document.getElementById('board');
 board.classList.add('board');
@@ -945,3 +946,5 @@ async function loadChildStreak(childUid) {
   streakEl.textContent = `🔥 Current Streak: ${streak} day${streak !== 1 ? 's' : ''}`;
   topHeader.appendChild(streakEl);
 }
+
+});
