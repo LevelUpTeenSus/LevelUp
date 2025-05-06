@@ -838,8 +838,9 @@ function buildBoard() {
   const controls = document.createElement('div');
   controls.className = 'controls';
   [
+    'loginBtn', 'registerBtn', 'googleBtn', 'logoutBtn',
     'addKidBtn', 'renameKidBtn', 'deleteKidBtn', 'undoBtn', 'redoBtn',
-    'importBtn', 'exportBtn', 'inviteBtn', 'logoutBtn', 'kidBar', 'userEmail'
+    'importBtn', 'exportBtn', 'inviteBtn', 'kidBar', 'userEmail'
   ].forEach(id => {
     const el = document.getElementById(id);
     if (el) controls.appendChild(el);
