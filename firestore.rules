@@ -25,11 +25,11 @@ service cloud.firestore {
     // Alias for invites: same rules as invitations
     match /invites/{code} {
       allow create: if request.auth != null
-                    && get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.role == 'parent'
+                    && get(/databases/$(database)/documents/userRoles/$(request.auth.uid)).data.role == 'parent'
                     && request.resource.data.parentUid == request.auth.uid;
       allow read: if request.auth != null
                   && (
-                    (get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.role == 'parent'
+                    (get(/databases/$(database)/documents/userRoles/$(request.auth.uid)).data.role == 'parent'
                      && resource.data.parentUid == request.auth.uid)
                     || resource.data.childUid == request.auth.uid
                   );
@@ -37,7 +37,7 @@ service cloud.firestore {
                     && !('childUid' in resource.data)
                     && request.resource.data.childUid == request.auth.uid;
       allow delete: if request.auth != null
-                    && get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.role == 'parent'
+                    && get(/databases/$(database)/documents/userRoles/$(request.auth.uid)).data.role == 'parent'
                     && resource.data.parentUid == request.auth.uid;
     }
 
@@ -45,13 +45,13 @@ service cloud.firestore {
     match /invitations/{code} {
       // Parents can create invites for their own kid
       allow create: if request.auth != null
-                    && get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.role == 'parent'
+                    && get(/databases/$(database)/documents/userRoles/$(request.auth.uid)).data.role == 'parent'
                     && request.resource.data.parentUid == request.auth.uid;
 
       // Parents (owner) or claimed child can read
       allow read: if request.auth != null
                   && (
-                    (get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.role == 'parent'
+                    (get(/databases/$(database)/documents/userRoles/$(request.auth.uid)).data.role == 'parent'
                      && resource.data.parentUid == request.auth.uid)
                     || resource.data.childUid == request.auth.uid
                   );
@@ -63,7 +63,7 @@ service cloud.firestore {
 
       // Parent who created can delete
       allow delete: if request.auth != null
-                    && get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.role == 'parent'
+                    && get(/databases/$(database)/documents/userRoles/$(request.auth.uid)).data.role == 'parent'
                     && resource.data.parentUid == request.auth.uid;
     }
 
