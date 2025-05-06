@@ -388,11 +388,13 @@ function initializeApp({ isChild }) {
   if (inviteBtn) inviteBtn.onclick = generateInvite;
 
   // Modal events
-  saveBtn.onclick = () => saveModal(editInput, modal);
-  deleteBtn.onclick = () => deleteModal(modal);
-  cancelBtn.onclick = () => closeModal(modal);
-  modal.onclick = e => { if (e.target === modal) closeModal(modal); };
-  window.onkeydown = e => { if (e.key === 'Escape') closeModal(modal); };
+  if (saveBtn) saveBtn.onclick = () => saveModal(editInput, modal);
+  if (deleteBtn) deleteBtn.onclick = () => deleteModal(modal);
+  if (cancelBtn) cancelBtn.onclick = () => closeModal(modal);
+  if (modal) modal.onclick = e => { if (e.target === modal) closeModal(modal); };
+  if (typeof window !== 'undefined') {
+    window.onkeydown = e => { if (e.key === 'Escape') closeModal(modal); };
+  }
 }
 
 /**
@@ -401,6 +403,14 @@ function initializeApp({ isChild }) {
  * @param {Object} elements
  */
 async function initParentDashboard(userId, elements) {
+  // Ensure parent controls are visible
+  if (elements.kidSelect) elements.kidSelect.style.display = '';
+  if (elements.addKidBtn) elements.addKidBtn.style.display = '';
+  if (elements.renameKidBtn) elements.renameKidBtn.style.display = '';
+  if (elements.deleteKidBtn) elements.deleteKidBtn.style.display = '';
+  if (elements.inviteBtn) elements.inviteBtn.style.display = '';
+  if (elements.logoutBtn) elements.logoutBtn.style.display = '';
+
   const { user } = await waitForAuthState();
   if (!user || user.uid !== userId) {
     showNotification('Authentication required', 'error');
@@ -408,6 +418,10 @@ async function initParentDashboard(userId, elements) {
   }
   // Show loading message in content-area
   const board = elements.board;
+  if (!board) {
+    showNotification('Board element not found', 'error');
+    return;
+  }
   let contentArea = board.querySelector('.content-area');
   if (!contentArea) {
     contentArea = document.createElement('div');
@@ -427,23 +441,21 @@ async function initParentDashboard(userId, elements) {
  */
 async function initChildDashboard(userId, elements) {
   // Hide parent-only controls for children
-  document.getElementById('kidSelect').style.display = 'none';
-  document.getElementById('addKidBtn').style.display = 'none';
-  document.getElementById('renameKidBtn').style.display = 'none';
-  document.getElementById('deleteKidBtn').style.display = 'none';
-  const inviteBtnEl = document.getElementById('inviteBtn');
-  if (inviteBtnEl) inviteBtnEl.style.display = 'none';
+  // Use the elements passed in, guard against missing elements
+  // Hide parent-only controls for children
+  if (elements.kidSelect) elements.kidSelect.style.display = 'none';
+  if (elements.addKidBtn) elements.addKidBtn.style.display = 'none';
+  if (elements.renameKidBtn) elements.renameKidBtn.style.display = 'none';
+  if (elements.deleteKidBtn) elements.deleteKidBtn.style.display = 'none';
+  if (elements.inviteBtn) elements.inviteBtn.style.display = 'none';
 
-  // Also hide all sign-in buttons; child should only see logout
-  const loginBtnEl = document.getElementById('loginBtn');
-  if (loginBtnEl) loginBtnEl.style.display = 'none';
-  const registerBtnEl = document.getElementById('registerBtn');
-  if (registerBtnEl) registerBtnEl.style.display = 'none';
-  const googleBtnEl = document.getElementById('googleBtn');
-  if (googleBtnEl) googleBtnEl.style.display = 'none';
+  // Hide sign-in controls
+  if (elements.loginBtn) elements.loginBtn.style.display = 'none';
+  if (elements.registerBtn) elements.registerBtn.style.display = 'none';
+  if (elements.googleBtn) elements.googleBtn.style.display = 'none';
+
   // Ensure logout remains visible
-  const logoutBtnEl = document.getElementById('logoutBtn');
-  if (logoutBtnEl) logoutBtnEl.style.display = '';
+  if (elements.logoutBtn) elements.logoutBtn.style.display = '';
 
   const { user } = await waitForAuthState();
   if (!user || user.uid !== userId) {
@@ -715,7 +727,8 @@ function isDuplicate(text, category, tierId) {
  * Initializes kid bar controls.
  * @param {Object} elements
  */
-function initKidBar({ kidSelect, addKidBtn, renameKidBtn, deleteKidBtn, undoBtn, redoBtn }) {
+function initKidBar(elements) {
+  const { kidSelect, addKidBtn, renameKidBtn, deleteKidBtn, undoBtn, redoBtn } = elements;
   if (!kidSelect) {
     console.error('kidSelect element is required but not found');
     return;
@@ -809,17 +822,23 @@ function deleteKid() {
 /**
  * Builds the board for parent view.
  */
-function buildBoard() {
+function buildBoard(elements) {
+  const {
+    board, kidBar, kidSelect, addKidBtn, renameKidBtn,
+    deleteKidBtn, undoBtn, redoBtn
+  } = elements || getElements();
+  if (!board) {
+    console.error('Board element missing');
+    return;
+  }
   console.log('Building board with store:', store);
-  const board = document.getElementById('board');
-  if (!board) { console.error('Board element not found'); return; }
+  
   // Preserve existing controls and kidBar; clear only the content area
   let contentArea = board.querySelector('.content-area');
   if (!contentArea) {
     contentArea = document.createElement('div');
     contentArea.className = 'content-area';
     // Insert contentArea after the static kidBar (if present), else at top
-    const kidBar = document.getElementById('kidBar');
     if (kidBar && kidBar.parentElement === board) {
       board.insertBefore(contentArea, kidBar.nextSibling);
     } else {
@@ -828,18 +847,12 @@ function buildBoard() {
   }
   contentArea.innerHTML = '';
 
-  // Show static kidBar and bind handlers
-  const kidBar = document.getElementById('kidBar');
+  // Show static kidBar and bind handlers using destructured variables
   if (userRole === 'parent') {
-    kidBar.style.display = 'flex';
-    initKidBar({
-      kidSelect: document.getElementById('kidSelect'),
-      addKidBtn: document.getElementById('addKidBtn'),
-      renameKidBtn: document.getElementById('renameKidBtn'),
-      deleteKidBtn: document.getElementById('deleteKidBtn'),
-      undoBtn: document.getElementById('undoBtn'),
-      redoBtn: document.getElementById('redoBtn')
-    });
+    if (kidBar) {
+      kidBar.style.display = 'flex';
+      initKidBar({ kidSelect, addKidBtn, renameKidBtn, deleteKidBtn, undoBtn, redoBtn });
+    }
   } else {
     if (kidBar) kidBar.style.display = 'none';
   }
@@ -1330,18 +1343,18 @@ function buildBoardWithUserData() {
  * @param {Object} elements
  */
 function buildBoardChild(elements) {
-  buildBoard();
-  // Ensure only logout remains visible on child view
-  const loginBtn = document.getElementById('loginBtn');
+  buildBoard(elements);
+  // Handle login/register/google/logout buttons using elements
+  const { loginBtn, registerBtn, googleBtn, logoutBtn } = elements;
   if (loginBtn) loginBtn.style.display = 'none';
-  const registerBtn = document.getElementById('registerBtn');
   if (registerBtn) registerBtn.style.display = 'none';
-  const googleBtn = document.getElementById('googleBtn');
   if (googleBtn) googleBtn.style.display = 'none';
-  const logoutBtn = document.getElementById('logoutBtn');
   if (logoutBtn) logoutBtn.style.display = '';
-  document.querySelectorAll('.add-btn, .move-btn, button.modify, .undo-btn, .redo-btn').forEach(btn => btn.remove());
-  document.querySelectorAll('li span').forEach(span => span.ondblclick = null);
+  // Guard removal of buttons via selectors
+  if (elements.board) {
+    document.querySelectorAll('.add-btn, .move-btn, button.modify, .undo-btn, .redo-btn').forEach(btn => btn.remove());
+    document.querySelectorAll('li span').forEach(span => span.ondblclick = null);
+  }
 }
 
 /**
