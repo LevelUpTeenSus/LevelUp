@@ -22,6 +22,25 @@ service cloud.firestore {
                          && request.auth.uid == userId;
     }
 
+    // Alias for invites: same rules as invitations
+    match /invites/{code} {
+      allow create: if request.auth != null
+                    && get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.role == 'parent'
+                    && request.resource.data.parentUid == request.auth.uid;
+      allow read: if request.auth != null
+                  && (
+                    (get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.role == 'parent'
+                     && resource.data.parentUid == request.auth.uid)
+                    || resource.data.childUid == request.auth.uid
+                  );
+      allow update: if request.auth != null
+                    && !('childUid' in resource.data)
+                    && request.resource.data.childUid == request.auth.uid;
+      allow delete: if request.auth != null
+                    && get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.role == 'parent'
+                    && resource.data.parentUid == request.auth.uid;
+    }
+
     // Invitations
     match /invitations/{code} {
       // Parents can create invites for their own kid
