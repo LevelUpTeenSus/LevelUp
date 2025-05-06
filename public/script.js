@@ -270,6 +270,8 @@ function initializeApp(elements) {
 
         if (userRole === 'parent') {
           await initParentDashboard(user.uid, elements);
+          // Persist parent store immediately to Firestore
+          await saveStore(null, user.uid);
         } else {
           await initChildDashboard(user.uid, elements);
         }
@@ -399,6 +401,14 @@ async function initParentDashboard(userId, elements) {
  * @param {Object} elements
  */
 async function initChildDashboard(userId, elements) {
+  // Hide parent-only controls for children
+  document.getElementById('kidSelect').style.display = 'none';
+  document.getElementById('addKidBtn').style.display = 'none';
+  document.getElementById('renameKidBtn').style.display = 'none';
+  document.getElementById('deleteKidBtn').style.display = 'none';
+  const inviteBtnEl = document.getElementById('inviteBtn');
+  if (inviteBtnEl) inviteBtnEl.style.display = 'none';
+
   const { user } = await waitForAuthState();
   if (!user || user.uid !== userId) {
     showNotification('Authentication required', 'error');
