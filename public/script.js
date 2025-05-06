@@ -342,7 +342,15 @@ async function initParentDashboard(userId, elements) {
     showNotification('Authentication required', 'error');
     return;
   }
-  elements.board.innerHTML = '<p>Loading...</p>';
+  // Show loading message in content-area
+  const board = elements.board;
+  let contentArea = board.querySelector('.content-area');
+  if (!contentArea) {
+    contentArea = document.createElement('div');
+    contentArea.className = 'content-area';
+    board.appendChild(contentArea);
+  }
+  contentArea.innerHTML = '<p>Loading...</p>';
   await loadStore(userId);
   initKidBar(elements);
   await buildBoardWithUserData(userId, elements);
