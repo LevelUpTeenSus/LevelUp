@@ -847,8 +847,7 @@ function buildBoard() {
   if (userRole === 'parent') controlIds.push('inviteBtn');
   controlIds.push(
     'addKidBtn', 'renameKidBtn', 'deleteKidBtn',
-    'undoBtn', 'redoBtn', 'importBtn', 'exportBtn',
-    'kidBar', 'userEmail'
+    'userEmail'
   );
   controlIds.forEach(id => {
     const el = document.getElementById(id);
