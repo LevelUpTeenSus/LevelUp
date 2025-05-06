@@ -107,8 +107,6 @@ document.addEventListener('DOMContentLoaded', () => {
     deleteKidBtn: document.getElementById('deleteKidBtn'),
     undoBtn: document.getElementById('undoBtn'),
     redoBtn: document.getElementById('redoBtn'),
-    exportBtn: document.getElementById('exportBtn'),
-    importBtn: document.getElementById('importBtn'),
     fileInput: document.getElementById('fileInput'),
     notifications: document.getElementById('notifications'),
     modal: document.getElementById('modal'),
@@ -843,7 +841,7 @@ function buildBoard() {
   const controls = board.querySelector('.controls') || document.createElement('div');
   controls.className = 'controls';
   if (!controls.parentElement) board.appendChild(controls);
-  const controlIds = ['logoutBtn'];
+  const controlIds = ['loginBtn', 'registerBtn', 'googleBtn', 'logoutBtn'];
   if (userRole === 'parent') controlIds.push('inviteBtn');
   controlIds.push(
     'addKidBtn', 'renameKidBtn', 'deleteKidBtn',
