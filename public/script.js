@@ -223,7 +223,6 @@ function initializeApp(elements) {
         googleBtn.style.display = 'none';
         logoutBtn.style.display = '';
         userEmail.textContent = user.email; // Check user session and initialize UI
-        board.innerHTML = '<p>Loading...</p>';
 
         // Only show parent-specific controls if userRole is 'parent'
         inviteBtn.style.display = userRole === 'parent' ? '' : 'none';
@@ -231,6 +230,10 @@ function initializeApp(elements) {
         renameKidBtn.style.display = userRole === 'parent' ? '' : 'none';
         deleteKidBtn.style.display = userRole === 'parent' ? '' : 'none';
         kidBar.style.display = userRole === 'parent' ? 'flex' : 'none';
+
+        // Ensure login/logout buttons are visible after removing loading line
+        loginBtn.style.display = '';
+        logoutBtn.style.display = '';
 
         if (userRole === 'parent') {
           await initParentDashboard(user.uid, elements);
@@ -601,7 +604,7 @@ function isDuplicate(text, category, tierId) {
  * Initializes kid bar controls.
  * @param {Object} elements
  */
-function initKidBar({ kidSelect, addKidBtn, renameKidBtn, deleteKidBtn, undoBtn, redoBtn, exportBtn, importBtn, fileInput }) {
+function initKidBar({ kidSelect, addKidBtn, renameKidBtn, deleteKidBtn, undoBtn, redoBtn }) {
   if (!kidSelect) {
     console.error('kidSelect element is required but not found');
     return;
@@ -620,9 +623,6 @@ function initKidBar({ kidSelect, addKidBtn, renameKidBtn, deleteKidBtn, undoBtn,
   if (deleteKidBtn) deleteKidBtn.onclick = deleteKid;
   if (undoBtn) undoBtn.onclick = undo;
   if (redoBtn) redoBtn.onclick = redo;
-  if (exportBtn) exportBtn.onclick = exportJSON;
-  if (importBtn && fileInput) importBtn.onclick = () => fileInput.click();
-  if (fileInput) fileInput.onchange = importJSON;
 }
 
 /**
@@ -699,58 +699,7 @@ function deleteKid() {
   buildBoard();
 }
 
-/**
- * Exports store as JSON.
- */
-function exportJSON() {
-  const blob = new Blob([JSON.stringify(store, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'responsibility-ladder.json';
-  a.click();
-  URL.revokeObjectURL(url);
-  showNotification('Export successful', 'success');
-}
 
-/**
- * Imports store from JSON.
- * @param {Event} e
- */
-function importJSON(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const exportBtn = document.getElementById('exportBtn');
-  const importBtn = document.getElementById('importBtn');
-  exportBtn.disabled = importBtn.disabled = true;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    try {
-      const obj = JSON.parse(ev.target.result);
-      if (obj.profiles && obj.currentKid) {
-        obj.mastered = obj.mastered || {};
-        Object.keys(obj.profiles).forEach(kid => {
-          obj.mastered[kid] = Array.isArray(obj.mastered[kid]) ? obj.mastered[kid] : [];
-        });
-        store = obj;
-        data = store.profiles[store.currentKid];
-        store.mastered[store.currentKid] = store.mastered[store.currentKid] || [];
-        saveStore('import');
-        refreshKidSelect();
-        document.getElementById('kidSelect').value = store.currentKid;
-        buildBoard();
-        showNotification('Import successful', 'success');
-      } else {
-        showNotification('Invalid file format', 'error');
-      }
-    } catch (err) {
-      showNotification('Failed to parse file', 'error');
-    }
-    document.getElementById('fileInput').value = '';
-    exportBtn.disabled = importBtn.disabled = false;
-  };
-  reader.readAsText(file);
-}
 
 /**
  * Populates to-do and mastered lists.
