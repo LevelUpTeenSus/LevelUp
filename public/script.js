@@ -113,8 +113,15 @@ const masteredList = document.getElementById('mastered-list');
 // Authentication
 onAuthStateChanged(auth, async (user) => {
   if (user) {
-    // Determine user role and initialize dashboard
-    const roleSnap = await getDoc(doc(db, 'userRoles', user.uid));
+    // Determine user role and initialize dashboard, creating a default if missing
+    let roleSnap;
+    try {
+      roleSnap = await getDoc(doc(db, 'userRoles', user.uid));
+    } catch (e) {
+      console.warn('userRoles fetch failed, creating default role:', e);
+      await setDoc(doc(db, 'userRoles', user.uid), { role: 'parent' });
+      roleSnap = await getDoc(doc(db, 'userRoles', user.uid));
+    }
     userRole = roleSnap.exists() ? roleSnap.data().role : 'parent';
     loginModal.style.display = 'none';
     kidBar.style.display = userRole === 'parent' ? 'flex' : 'none';
