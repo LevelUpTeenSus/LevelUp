@@ -39,3 +39,9 @@ try {
 }
 
 export { app, db, analytics };
+
+{
+  "projects": {
+    "default": "levelupteensus"
+  }
+}
