@@ -149,7 +149,9 @@ registerBtn.onclick = async () => {
   const password = passwordInput.value.trim();
   if (!email || !password) return showNotification('Email and password are required', 'error');
   try {
-    await createUserWithEmailAndPassword(auth, email, password);
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    await setDoc(doc(db, 'userRoles', user.uid), { role: 'parent' });
     showNotification('Registered successfully', 'success');
   } catch (err) {
     showNotification(err.message, 'error');
@@ -159,7 +161,13 @@ registerBtn.onclick = async () => {
 googleBtn.onclick = async () => {
   const provider = new GoogleAuthProvider();
   try {
-    await signInWithPopup(auth, provider);
+    const userCredential = await signInWithPopup(auth, provider);
+    const user = userCredential.user;
+    const roleRef = doc(db, 'userRoles', user.uid);
+    const roleSnap = await getDoc(roleRef);
+    if (!roleSnap.exists()) {
+      await setDoc(roleRef, { role: 'parent' });
+    }
     showNotification('Signed in with Google', 'success');
   } catch (err) {
     showNotification(err.message, 'error');
