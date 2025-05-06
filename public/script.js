@@ -97,10 +97,15 @@ if (isLocalhost) {
     showNotification('Emulator connection failed. Using production Firebase.', 'warning');
   }
 } else {
-  initializeAppCheck(app, {
-    provider: new ReCaptchaV3Provider('YOUR_RECAPTCHA_SITE_KEY'),
-    isTokenAutoRefreshEnabled: true
-  });
+  try {
+    initializeAppCheck(app, {
+      provider: new ReCaptchaV3Provider('YOUR_RECAPTCHA_SITE_KEY'),
+      isTokenAutoRefreshEnabled: true
+    });
+  } catch (err) {
+    console.warn('App Check initialization failed:', err);
+    showNotification('App verification unavailable. Some features may be limited.', 'warning');
+  }
 }
 
 // DOM Initialization
@@ -513,7 +518,7 @@ function updateUndoRedo() {
   const undoBtn = document.getElementById('undoBtn');
   const redoBtn = document.getElementById('redoBtn');
   if (undoBtn) undoBtn.disabled = actionHistoryIndex <= 0;
-  if (redoBtn) redoBtn.disabled = actionHistoryIndex >= actionHistory.length - 1;
+  if (redoBtn) undoBtn.disabled = actionHistoryIndex >= actionHistory.length - 1;
 }
 
 /**
@@ -613,7 +618,7 @@ function addKid() {
   store.currentKid = kid;
   data = store.profiles[kid];
   saveStore('addKid');
-  refreshKid upplSelect();
+  refreshKidSelect();
   document.getElementById('kidSelect').value = kid;
   buildBoard();
 }
