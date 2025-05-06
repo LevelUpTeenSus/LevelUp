@@ -807,7 +807,7 @@ function buildBoard(elements) {
   }
 
   if (!data || !store) {
-    contentArea.innerHTML = '<h1>LevelUp</h1><p>No data available. Please add some items.</p>';
+    contentArea.innerHTML = '<p>No data available. Please add some items.</p>';
     return;
   }
 

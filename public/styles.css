@@ -796,3 +796,8 @@ footer {
   width: 100%;
   max-width: 400px;
 }
+.kid-bar h1 {
+  background: linear-gradient(to right, #3b82f6, #6366f1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
