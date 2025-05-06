@@ -674,6 +674,8 @@ function initKidBar({ kidSelect, addKidBtn, renameKidBtn, deleteKidBtn, undoBtn,
     console.error('kidSelect element is required but not found');
     return;
   }
+  // Ensure the dropdown is visible for parent users
+  kidSelect.style.display = '';
   refreshKidSelect();
   kidSelect.value = store.currentKid;
   kidSelect.onchange = () => {
