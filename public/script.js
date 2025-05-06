@@ -1,4 +1,22 @@
 /**
+ * Generates and copies an invite code for a child profile.
+ */
+async function generateInvite() {
+  try {
+    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+    await setDoc(doc(db, CONFIG.COLLECTIONS.INVITES, code), {
+      parentUid: auth.currentUser.uid,
+      kidName: store.currentKid,
+      createdAt: new Date(),
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+    });
+    navigator.clipboard.writeText(code);
+    showNotification(`Invite code ${code} copied to clipboard`, 'success');
+  } catch (err) {
+    handleError(err, 'Failed to generate invite code');
+  }
+}
+/**
  * Responsibility tracking app using Firebase Auth and Firestore.
  * Manages parent/child dashboards for tracking responsibilities and privileges.
  * @module app
@@ -306,23 +324,7 @@ function initializeApp(elements) {
     }
   };
 
-  if (inviteBtn) {
-    inviteBtn.onclick = async () => {
-      try {
-        const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-        await setDoc(doc(db, CONFIG.COLLECTIONS.INVITES, code), { 
-          parentUid: auth.currentUser.uid,
-          kidName: store.currentKid,
-          createdAt: new Date(),
-          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
-        });
-        navigator.clipboard.writeText(code);
-        showNotification(`Invite code ${code} copied to clipboard`, 'success');
-      } catch (err) {
-        handleError(err, 'Failed to generate invite code');
-      }
-    };
-  }
+  if (inviteBtn) inviteBtn.onclick = generateInvite;
 
   // Modal events
   saveBtn.onclick = () => saveModal(editInput, modal);
@@ -794,10 +796,16 @@ function buildBoard() {
   }
   controls.innerHTML = '';
 
-  // Ensure handlers and DOM references are available
-  // (addKid, renameKid, deleteKid, inviteBtn, logoutBtn assumed in scope)
+  // Add kidSelect dropdown for parents at the top of controls
+  const kidSelect = document.getElementById('kidSelect');
+  if (userRole === 'parent' && kidSelect) {
+    kidSelect.style.display = '';
+    controls.appendChild(kidSelect);
+  }
+
+  // Existing controlConfigs block (invite uses generateInvite directly)
   const controlConfigs = [
-    { id: 'invite', label: 'Invite Child', show: userRole === 'parent', onClick: () => inviteBtn && inviteBtn.click() },
+    { id: 'invite', label: 'Invite Child', show: userRole === 'parent', onClick: generateInvite },
     { id: 'addKid', label: 'Add Profile', show: userRole === 'parent', onClick: () => addKid() },
     { id: 'renameKid', label: 'Rename Profile', show: userRole === 'parent', onClick: () => renameKid() },
     { id: 'deleteKid', label: 'Delete Profile', show: userRole === 'parent', onClick: () => deleteKid() },
@@ -812,6 +820,9 @@ function buildBoard() {
     btn.onclick = cfg.onClick;
     controls.appendChild(btn);
   });
+
+  // Refresh the kidSelect dropdown after controls generation (before displaying email)
+  refreshKidSelect();
 
   // Display user email
   const emailDisplay = document.createElement('span');
