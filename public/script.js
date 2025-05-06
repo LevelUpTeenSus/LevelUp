@@ -1306,6 +1306,15 @@ function buildBoardWithUserData() {
  */
 function buildBoardChild(elements) {
   buildBoard();
+  // Ensure only logout remains visible on child view
+  const loginBtn = document.getElementById('loginBtn');
+  if (loginBtn) loginBtn.style.display = 'none';
+  const registerBtn = document.getElementById('registerBtn');
+  if (registerBtn) registerBtn.style.display = 'none';
+  const googleBtn = document.getElementById('googleBtn');
+  if (googleBtn) googleBtn.style.display = 'none';
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) logoutBtn.style.display = '';
   document.querySelectorAll('.add-btn, .move-btn, button.modify, .undo-btn, .redo-btn').forEach(btn => btn.remove());
   document.querySelectorAll('li span').forEach(span => span.ondblclick = null);
 }
