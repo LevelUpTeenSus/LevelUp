@@ -770,22 +770,31 @@ function buildBoard() {
   attachEvents();
   updateAllTiers();
 
-  // Update controls without moving DOM elements
-  const controls = board.querySelector('.controls') || document.createElement('div');
-  controls.className = 'controls';
-  if (!controls.parentElement) board.appendChild(controls);
-  const controlIds = ['logoutBtn'];
-  if (userRole === 'parent') controlIds.push('inviteBtn');
-  controlIds.push(
-    'addKidBtn', 'renameKidBtn', 'deleteKidBtn',
-    'userEmail'
-  );
-  controlIds.forEach(id => {
-    const el = document.getElementById(id);
-    if (el && !controls.contains(el)) {
-      const clone = el.cloneNode(true);
-      clone.id = `${id}-clone`;
-      controls.appendChild(clone);
+  // Update controls: use actual elements, not clones, and ensure they're visible and event handlers work
+  let controls = board.querySelector('.controls');
+  if (!controls) {
+    controls = document.createElement('div');
+    controls.className = 'controls';
+    board.appendChild(controls);
+  }
+  // Clear previous controls
+  controls.innerHTML = '';
+  // Get references to control elements
+  const userEmail = document.getElementById('userEmail');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const inviteBtn = document.getElementById('inviteBtn');
+  const addKidBtn = document.getElementById('addKidBtn');
+  const renameKidBtn = document.getElementById('renameKidBtn');
+  const deleteKidBtn = document.getElementById('deleteKidBtn');
+  // List of element references to show
+  const elems = [userEmail, logoutBtn];
+  if (userRole === 'parent') {
+    elems.unshift(inviteBtn, addKidBtn, renameKidBtn, deleteKidBtn);
+  }
+  elems.forEach(el => {
+    if (el) {
+      el.style.display = '';
+      controls.appendChild(el);
     }
   });
 }
