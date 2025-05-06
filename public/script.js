@@ -409,6 +409,17 @@ async function initChildDashboard(userId, elements) {
   const inviteBtnEl = document.getElementById('inviteBtn');
   if (inviteBtnEl) inviteBtnEl.style.display = 'none';
 
+  // Also hide all sign-in buttons; child should only see logout
+  const loginBtnEl = document.getElementById('loginBtn');
+  if (loginBtnEl) loginBtnEl.style.display = 'none';
+  const registerBtnEl = document.getElementById('registerBtn');
+  if (registerBtnEl) registerBtnEl.style.display = 'none';
+  const googleBtnEl = document.getElementById('googleBtn');
+  if (googleBtnEl) googleBtnEl.style.display = 'none';
+  // Ensure logout remains visible
+  const logoutBtnEl = document.getElementById('logoutBtn');
+  if (logoutBtnEl) logoutBtnEl.style.display = '';
+
   const { user } = await waitForAuthState();
   if (!user || user.uid !== userId) {
     showNotification('Authentication required', 'error');
