@@ -837,11 +837,17 @@ function buildBoard() {
   
   const controls = document.createElement('div');
   controls.className = 'controls';
-  [
-    'loginBtn', 'registerBtn', 'googleBtn', 'logoutBtn',
-    'addKidBtn', 'renameKidBtn', 'deleteKidBtn', 'undoBtn', 'redoBtn',
-    'importBtn', 'exportBtn', 'inviteBtn', 'kidBar', 'userEmail'
-  ].forEach(id => {
+  // Always show logout
+  const controlIds = ['logoutBtn'];
+  // Show invite button only for parents
+  if (userRole === 'parent') controlIds.push('inviteBtn');
+  // Then show board controls
+  controlIds.push(
+    'addKidBtn', 'renameKidBtn', 'deleteKidBtn',
+    'undoBtn', 'redoBtn', 'importBtn', 'exportBtn',
+    'kidBar', 'userEmail'
+  );
+  controlIds.forEach(id => {
     const el = document.getElementById(id);
     if (el) controls.appendChild(el);
   });
