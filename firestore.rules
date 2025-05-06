@@ -41,9 +41,11 @@ service cloud.firestore {
       // Children may only write their own activity entries
       allow create: if request.auth != null
                  && request.resource.data.childUid == request.auth.uid;
-      // Only the child may read their own activity
       allow read: if request.auth != null
-               && resource.data.childUid == request.auth.uid;
+               && (
+                    resource.data.childUid == request.auth.uid ||
+                    resource.data.parentUid == request.auth.uid
+                  );
       // No one may update or delete once written
       allow update, delete: if false;
     }
@@ -52,6 +54,10 @@ service cloud.firestore {
       allow read: if true;
       allow write: if request.auth != null
                    && get(/databases/$(database)/documents/userRoles/$(request.auth.uid)).data.role == 'parent';
+    }
+    // Catch-all: deny all other reads and writes
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

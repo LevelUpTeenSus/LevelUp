@@ -26,19 +26,31 @@ import { app } from './firebaseConfig.js';
 // Enable offline persistence to keep data across reloads
 import { enableIndexedDbPersistence } from 'firebase/firestore';
 
+// Centralized collection names
+const COLLECTIONS = {
+  USERS: 'users',
+  ROLES: 'userRoles',
+  INVITES: 'invitations',
+  ITEMS: 'items',
+  CHILD_ACTIVITY: 'childActivity'
+};
+
+// Detect local emulator environment
+const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+
 // Initialize Auth & Firestore
 const auth = getAuth(app);
 const db = getFirestore(app);
 // Enable offline persistence to keep data across reloads
-enableIndexedDbPersistence(db).catch((err) => {
-  console.error('Failed to enable indexedDB persistence:', err);
-});
+enableIndexedDbPersistence(db).catch(err =>
+  handleError(err, 'Failed to enable offline persistence')
+);
 
 // Enable verbose Firestore logging
 setLogLevel('debug');
 
 // Connect to emulators if running locally
-if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+if (isLocalhost) {
   connectAuthEmulator(auth, 'http://localhost:9099');
   connectFirestoreEmulator(db, 'localhost', 8080);
 }
@@ -106,6 +118,7 @@ const registerBtn = document.getElementById('registerBtn');
 const googleBtn = document.getElementById('googleBtn');
 const userEmail = document.getElementById('userEmail');
 const logoutBtn = document.getElementById('logoutBtn');
+const inviteBtn = document.getElementById('inviteBtn');
 const kidBar = document.getElementById('kidBar');
 const todoList = document.getElementById('todo-list');
 const masteredList = document.getElementById('mastered-list');
@@ -148,7 +161,7 @@ loginBtn.onclick = async () => {
     await signInWithEmailAndPassword(auth, email, password);
     showNotification('Logged in successfully', 'success');
   } catch (err) {
-    showNotification(err.message, 'error');
+    handleError(err, 'Failed to log in');
   }
 };
 
@@ -162,7 +175,7 @@ registerBtn.onclick = async () => {
     await setDoc(doc(db, 'userRoles', user.uid), { role: 'parent' });
     showNotification('Registered successfully', 'success');
   } catch (err) {
-    showNotification(err.message, 'error');
+    handleError(err, 'Failed to register');
   }
 };
 
@@ -178,7 +191,7 @@ googleBtn.onclick = async () => {
     }
     showNotification('Signed in with Google', 'success');
   } catch (err) {
-    showNotification(err.message, 'error');
+    handleError(err, 'Failed to sign in with Google');
   }
 };
 
@@ -189,7 +202,18 @@ logoutBtn.onclick = async () => {
     await signOut(auth);
     showNotification('Logged out successfully', 'success');
   } catch (err) {
-    showNotification(err.message, 'error');
+    handleError(err, 'Failed to log out');
+  }
+};
+
+inviteBtn.onclick = async () => {
+  try {
+    const code = Math.random().toString(36).substring(2,8).toUpperCase();
+    await setDoc(doc(db, 'invitations', code), { parentUid: auth.currentUser.uid });
+    navigator.clipboard.writeText(code);
+    showNotification(`Invite code ${code} copied to clipboard`, 'success');
+  } catch (err) {
+    handleError(err, 'Failed to generate invite code');
   }
 };
 
@@ -214,8 +238,7 @@ async function loadStore(uid) {
     }
     data = store.profiles[store.currentKid];
   } catch (e) {
-    console.error('loadStore error:', e);
-    showNotification('Failed to load data', 'error');
+    handleError(e, 'Failed to load data');
     store = {
       currentKid: DEFAULT_KID,
       profiles: { [DEFAULT_KID]: structuredClone(DEFAULT_DATA) },
@@ -237,7 +260,7 @@ async function saveStore(action = null, uid = auth.currentUser?.uid) {
   try {
     await setDoc(doc(db, 'users', uid), { store }, { merge: true });
   } catch (e) {
-    showNotification('Failed to save data', 'error');
+    handleError(e, 'Failed to save data');
   }
 }
 
@@ -278,6 +301,12 @@ function showNotification(message, type = 'success') {
   div.textContent = message;
   notifications.appendChild(div);
   setTimeout(() => div.remove(), 3000);
+}
+
+// Unified error handler
+function handleError(err, userMessage = 'An error occurred') {
+  console.error(err);
+  showNotification(userMessage, 'error');
 }
 
 // Validation
@@ -426,8 +455,7 @@ async function getUserData(userId) {
     const userDoc = await getDoc(userDocRef);
     return userDoc.exists() ? userDoc.data() : null;
   } catch (error) {
-    console.error('Error fetching user data:', error);
-    showNotification('Failed to fetch user data', 'error');
+    handleError(error, 'Failed to fetch user data');
     return null;
   }
 }
@@ -472,8 +500,7 @@ async function populateListsWithUserData(userData) {
       ? lists.mastered.map(item => `<li>${item.name}</li>`).join('')
       : '<li>No mastered responsibilities.</li>';
   } catch (error) {
-    console.error('Error populating lists:', error);
-    showNotification('Failed to load lists', 'error');
+    handleError(error, 'Failed to load lists');
     const todoListEl = document.getElementById('todo-list');
     const masteredListEl = document.getElementById('mastered-list');
     todoListEl.innerHTML = '<li>Failed to load to-do responsibilities.</li>';
@@ -560,6 +587,7 @@ function buildBoard() {
     redoBtn,
     importBtn,
     exportBtn,
+    inviteBtn,
     logoutBtn
   ].forEach(btn => controls.appendChild(btn));
   // Append kid selector dropdown into bottom controls
@@ -922,8 +950,7 @@ async function buildBoardWithUserData(userId) {
   try {
     buildBoard();
   } catch (error) {
-    console.error('Error building board with user data:', error);
-    showNotification('Failed to build board', 'error');
+    handleError(error, 'Failed to build board');
     buildBoard();
   }
 }
