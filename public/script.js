@@ -775,33 +775,39 @@ function buildBoard() {
   attachEvents();
   updateAllTiers();
 
-  // Update controls: use actual elements, not clones, and ensure they're visible and event handlers work
+  // Generate controls programmatically to avoid hidden static elements
   let controls = board.querySelector('.controls');
   if (!controls) {
     controls = document.createElement('div');
     controls.className = 'controls';
     board.appendChild(controls);
   }
-  // Clear previous controls
   controls.innerHTML = '';
-  // Get references to control elements
-  const userEmail = document.getElementById('userEmail');
-  const logoutBtn = document.getElementById('logoutBtn');
-  const inviteBtn = document.getElementById('inviteBtn');
-  const addKidBtn = document.getElementById('addKidBtn');
-  const renameKidBtn = document.getElementById('renameKidBtn');
-  const deleteKidBtn = document.getElementById('deleteKidBtn');
-  // List of element references to show
-  const elems = [userEmail, logoutBtn];
-  if (userRole === 'parent') {
-    elems.unshift(inviteBtn, addKidBtn, renameKidBtn, deleteKidBtn);
-  }
-  elems.forEach(el => {
-    if (el) {
-      el.style.display = '';
-      controls.appendChild(el);
-    }
+
+  // Ensure handlers and DOM references are available
+  // (addKid, renameKid, deleteKid, inviteBtn, logoutBtn assumed in scope)
+  const controlConfigs = [
+    { id: 'invite', label: 'Invite Child', show: userRole === 'parent', onClick: () => inviteBtn.click() },
+    { id: 'addKid', label: 'Add Profile', show: userRole === 'parent', onClick: () => addKid() },
+    { id: 'renameKid', label: 'Rename Profile', show: userRole === 'parent', onClick: () => renameKid() },
+    { id: 'deleteKid', label: 'Delete Profile', show: userRole === 'parent', onClick: () => deleteKid() },
+    { id: 'logout', label: 'Log Out', show: true, onClick: () => logoutBtn.click() }
+  ];
+
+  controlConfigs.forEach(cfg => {
+    if (!cfg.show) return;
+    const btn = document.createElement('button');
+    btn.id = cfg.id + 'ControlBtn';
+    btn.textContent = cfg.label;
+    btn.onclick = cfg.onClick;
+    controls.appendChild(btn);
   });
+
+  // Display user email
+  const emailDisplay = document.createElement('span');
+  emailDisplay.className = 'user-email-display';
+  emailDisplay.textContent = auth.currentUser?.email || '';
+  controls.appendChild(emailDisplay);
 }
 
 /**
