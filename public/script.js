@@ -264,30 +264,30 @@ function initializeApp({ isChild }) {
         if (!['parent', 'child'].includes(userRole)) {
           throw new Error(`Invalid role: ${userRole}`);
         }
-        loginModal.style.display = 'none';
+        if (loginModal) loginModal.style.display = 'none';
         // UI controls based on isChild
         if (isChild) {
-          elements.loginBtn.style.display = 'none';
-          elements.registerBtn.style.display = 'none';
-          elements.googleBtn.style.display = 'none';
-          elements.inviteBtn.style.display = 'none';
-          elements.addKidBtn.style.display = 'none';
-          elements.renameKidBtn.style.display = 'none';
-          elements.deleteKidBtn.style.display = 'none';
-          elements.kidBar.style.display = 'none';
-          elements.logoutBtn.style.display = '';
+          if (elements.loginBtn) elements.loginBtn.style.display = 'none';
+          if (elements.registerBtn) elements.registerBtn.style.display = 'none';
+          if (elements.googleBtn) elements.googleBtn.style.display = 'none';
+          if (elements.inviteBtn) elements.inviteBtn.style.display = 'none';
+          if (elements.addKidBtn) elements.addKidBtn.style.display = 'none';
+          if (elements.renameKidBtn) elements.renameKidBtn.style.display = 'none';
+          if (elements.deleteKidBtn) elements.deleteKidBtn.style.display = 'none';
+          if (elements.kidBar) elements.kidBar.style.display = 'none';
+          if (elements.logoutBtn) elements.logoutBtn.style.display = '';
         } else {
-          elements.loginBtn.style.display = 'none';
-          elements.registerBtn.style.display = 'none';
-          elements.googleBtn.style.display = 'none';
-          elements.logoutBtn.style.display = '';
-          elements.inviteBtn.style.display = '';
-          elements.addKidBtn.style.display = '';
-          elements.renameKidBtn.style.display = '';
-          elements.deleteKidBtn.style.display = '';
-          elements.kidBar.style.display = 'flex';
+          if (elements.loginBtn) elements.loginBtn.style.display = 'none';
+          if (elements.registerBtn) elements.registerBtn.style.display = 'none';
+          if (elements.googleBtn) elements.googleBtn.style.display = 'none';
+          if (elements.logoutBtn) elements.logoutBtn.style.display = '';
+          if (elements.inviteBtn) elements.inviteBtn.style.display = '';
+          if (elements.addKidBtn) elements.addKidBtn.style.display = '';
+          if (elements.renameKidBtn) elements.renameKidBtn.style.display = '';
+          if (elements.deleteKidBtn) elements.deleteKidBtn.style.display = '';
+          if (elements.kidBar) elements.kidBar.style.display = 'flex';
         }
-        userEmail.textContent = user.email; // Check user session and initialize UI
+        if (userEmail) userEmail.textContent = user.email; // Check user session and initialize UI
 
         if (userRole === 'parent') {
           await initParentDashboard(user.uid, elements);
@@ -316,70 +316,74 @@ function initializeApp({ isChild }) {
   });
 
   // Event bindings
-  loginBtn.onclick = async () => {
-    const email = emailInput.value.trim();
-    const password = passwordInput.value.trim();
-    if (!email || !password) return showNotification('Email and password are required', 'error');
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      showNotification('Logged in successfully', 'success');
-    } catch (err) {
-      handleError(err, 'Failed to log in');
-    }
-  };
-
-  registerBtn.onclick = async () => {
-    const email = emailInput.value.trim();
-    const password = passwordInput.value.trim();
-    if (!email || !password) return showNotification('Email and password are required', 'error');
-    // Invite/child registration logic
-    const isChildReg = document.getElementById('isChildCheckbox')?.checked;
-    const inviteCode = document.getElementById('inviteInput')?.value.trim().toUpperCase();
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const uid = userCredential.user.uid;
-      if (isChildReg) {
-        // Set role to 'child' and link via invite code
-        const invData = await promptForInviteCode(inviteCode);
-        if (!invData) return;
-        const { parentUid, kidName } = invData;
-        await setDoc(doc(db, CONFIG.COLLECTIONS.ROLES, uid), { role: 'child' });
-        await setDoc(doc(db, CONFIG.COLLECTIONS.USERS, uid), { parentUid }, { merge: true });
-      } else {
-        await setDoc(doc(db, CONFIG.COLLECTIONS.ROLES, uid), { role: 'parent' });
+  if (loginBtn)
+    loginBtn.onclick = async () => {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value.trim();
+      if (!email || !password) return showNotification('Email and password are required', 'error');
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        showNotification('Logged in successfully', 'success');
+      } catch (err) {
+        handleError(err, 'Failed to log in');
       }
-      showNotification('Registered successfully', 'success');
-    } catch (err) {
-      handleError(err, 'Failed to register');
-    }
-  };
+    };
 
-  googleBtn.onclick = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      const userCredential = await signInWithPopup(auth, provider);
-      const user = userCredential.user;
-      const roleRef = doc(db, CONFIG.COLLECTIONS.ROLES, user.uid);
-      if (!(await getDoc(roleRef)).exists()) {
-        await setDoc(roleRef, { role: 'parent' });
+  if (registerBtn)
+    registerBtn.onclick = async () => {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value.trim();
+      if (!email || !password) return showNotification('Email and password are required', 'error');
+      // Invite/child registration logic
+      const isChildReg = document.getElementById('isChildCheckbox')?.checked;
+      const inviteCode = document.getElementById('inviteInput')?.value.trim().toUpperCase();
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const uid = userCredential.user.uid;
+        if (isChildReg) {
+          // Set role to 'child' and link via invite code
+          const invData = await promptForInviteCode(inviteCode);
+          if (!invData) return;
+          const { parentUid, kidName } = invData;
+          await setDoc(doc(db, CONFIG.COLLECTIONS.ROLES, uid), { role: 'child' });
+          await setDoc(doc(db, CONFIG.COLLECTIONS.USERS, uid), { parentUid }, { merge: true });
+        } else {
+          await setDoc(doc(db, CONFIG.COLLECTIONS.ROLES, uid), { role: 'parent' });
+        }
+        showNotification('Registered successfully', 'success');
+      } catch (err) {
+        handleError(err, 'Failed to register');
       }
-      showNotification('Signed in with Google', 'success');
-    } catch (err) {
-      handleError(err, 'Failed to sign in with Google');
-    }
-  };
+    };
 
-  logoutBtn.onclick = async () => {
-    try {
-      await saveStore();
-      await signOut(auth);
-      actionHistory = [];
-      actionHistoryIndex = -1;
-      showNotification('Logged out successfully', 'success');
-    } catch (err) {
-      handleError(err, 'Failed to log out');
-    }
-  };
+  if (googleBtn)
+    googleBtn.onclick = async () => {
+      const provider = new GoogleAuthProvider();
+      try {
+        const userCredential = await signInWithPopup(auth, provider);
+        const user = userCredential.user;
+        const roleRef = doc(db, CONFIG.COLLECTIONS.ROLES, user.uid);
+        if (!(await getDoc(roleRef)).exists()) {
+          await setDoc(roleRef, { role: 'parent' });
+        }
+        showNotification('Signed in with Google', 'success');
+      } catch (err) {
+        handleError(err, 'Failed to sign in with Google');
+      }
+    };
+
+  if (logoutBtn)
+    logoutBtn.onclick = async () => {
+      try {
+        await saveStore();
+        await signOut(auth);
+        actionHistory = [];
+        actionHistoryIndex = -1;
+        showNotification('Logged out successfully', 'success');
+      } catch (err) {
+        handleError(err, 'Failed to log out');
+      }
+    };
 
   if (inviteBtn) inviteBtn.onclick = generateInvite;
 
