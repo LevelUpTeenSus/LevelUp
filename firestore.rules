@@ -48,13 +48,8 @@ service cloud.firestore {
                     && get(/databases/$(database)/documents/userRoles/$(request.auth.uid)).data.role == 'parent'
                     && request.resource.data.parentUid == request.auth.uid;
 
-      // Parents (owner) or claimed child can read
-      allow read: if request.auth != null
-                  && (
-                    (get(/databases/$(database)/documents/userRoles/$(request.auth.uid)).data.role == 'parent'
-                     && resource.data.parentUid == request.auth.uid)
-                    || resource.data.childUid == request.auth.uid
-                  );
+      // Any authenticated user can read (so children can look up and redeem)
+      allow read: if request.auth != null;
 
       // Child claims an unclaimed invite
       allow update: if request.auth != null
