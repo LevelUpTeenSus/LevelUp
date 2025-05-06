@@ -8,6 +8,12 @@ service cloud.firestore {
                          && request.auth.uid == userId;
     }
 
+    // Alias for roles: allow users to read/write their own role document
+    match /roles/{userId} {
+      allow read, write: if request.auth != null
+                         && request.auth.uid == userId;
+    }
+
     // Each user can read/write their own store under 'users'
     match /users/{userId} {
       allow read, write: if request.auth != null
