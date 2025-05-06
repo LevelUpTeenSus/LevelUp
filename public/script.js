@@ -203,7 +203,13 @@ function resetUIElements(elements) {
     if (el) el.style.display = '';
   });
   if (loginModal) loginModal.style.display = 'flex';
-  if (board) board.innerHTML = '<h1>LevelUp</h1><p>Please log in to continue.</p>';
+  // Do NOT clear the entire board; only clear the content-area if present
+  if (board) {
+    let contentArea = board.querySelector('.content-area');
+    if (contentArea) {
+      contentArea.innerHTML = '<h1>LevelUp</h1><p>Please log in to continue.</p>';
+    }
+  }
 }
 
 /**
@@ -758,16 +764,21 @@ function deleteKid() {
 function buildBoard() {
   console.log('Building board with store:', store);
   const board = document.getElementById('board');
-  if (!board) {
-    console.error('Board element not found');
-    return;
+  if (!board) { console.error('Board element not found'); return; }
+  // Preserve existing controls and kidBar; clear only the content area
+  let contentArea = board.querySelector('.content-area');
+  if (!contentArea) {
+    contentArea = document.createElement('div');
+    contentArea.className = 'content-area';
+    // Insert contentArea after the static kidBar (if present), else at top
+    const kidBar = document.getElementById('kidBar');
+    if (kidBar && kidBar.parentElement === board) {
+      board.insertBefore(contentArea, kidBar.nextSibling);
+    } else {
+      board.insertBefore(contentArea, board.firstChild);
+    }
   }
-  // Clear the entire board (removes login placeholder or old content)
-  board.innerHTML = '';
-  // Create fresh content-area container
-  const contentArea = document.createElement('div');
-  contentArea.className = 'content-area';
-  board.appendChild(contentArea);
+  contentArea.innerHTML = '';
 
   if (!data || !store) {
     contentArea.innerHTML = '<h1>LevelUp</h1><p>No data available. Please add some items.</p>';
