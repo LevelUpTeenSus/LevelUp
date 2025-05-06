@@ -237,7 +237,7 @@ function initializeApp(elements) {
       addKidBtn.style.display = 'none';
       renameKidBtn.style.display = 'none';
       deleteKidBtn.style.display = 'none';
-      buildBoard();
+      // buildBoard(); // Removed to prevent UI wipe when no user is logged in
     }
   });
 
