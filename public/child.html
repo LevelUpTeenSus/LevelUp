@@ -24,7 +24,9 @@
 
   <script type="module">
     import { initializeChildApp } from '/script.js';
-    initializeChildApp();
+    window.addEventListener('DOMContentLoaded', () => {
+      initializeChildApp();
+    });
   </script>
 </body>
 </html>
