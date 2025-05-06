@@ -50,6 +50,21 @@ import {
 } from 'firebase/firestore';
 import { app } from './firebaseConfig.js';
 
+/**
+ * Refreshes the kidSelect dropdown with current profiles.
+ */
+function refreshKidSelect() {
+  const kidSelect = document.getElementById('kidSelect');
+  if (!kidSelect || !store || !store.profiles) return;
+  kidSelect.innerHTML = '';
+  Object.keys(store.profiles).forEach(kid => {
+    const option = document.createElement('option');
+    option.value = kid;
+    option.textContent = kid;
+    kidSelect.appendChild(option);
+  });
+}
+
 // Constants
 const CONFIG = {
   MAX_INPUT_LENGTH: 50,
