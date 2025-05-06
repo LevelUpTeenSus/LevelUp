@@ -714,15 +714,12 @@ function buildBoard() {
     console.error('Board element not found');
     return;
   }
-
-  // Clear only the content area, not controls
-  let contentArea = board.querySelector('.content-area');
-  if (!contentArea) {
-    contentArea = document.createElement('div');
-    contentArea.className = 'content-area';
-    board.appendChild(contentArea);
-  }
-  contentArea.innerHTML = '';
+  // Clear the entire board (removes login placeholder or old content)
+  board.innerHTML = '';
+  // Create fresh content-area container
+  const contentArea = document.createElement('div');
+  contentArea.className = 'content-area';
+  board.appendChild(contentArea);
 
   if (!data || !store) {
     contentArea.innerHTML = '<h1>LevelUp</h1><p>No data available. Please add some items.</p>';
