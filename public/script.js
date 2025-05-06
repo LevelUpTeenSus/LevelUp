@@ -288,9 +288,22 @@ function initializeApp(elements) {
     const email = emailInput.value.trim();
     const password = passwordInput.value.trim();
     if (!email || !password) return showNotification('Email and password are required', 'error');
+    // Invite/child registration logic
+    const isChild = document.getElementById('isChildCheckbox')?.checked;
+    const inviteCode = document.getElementById('inviteInput')?.value.trim().toUpperCase();
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      await setDoc(doc(db, CONFIG.COLLECTIONS.ROLES, userCredential.user.uid), { role: 'parent' });
+      const uid = userCredential.user.uid;
+      if (isChild) {
+        // Set role to 'child' and link via invite code
+        const invData = await promptForInviteCode(inviteCode);
+        if (!invData) return;
+        const { parentUid, kidName } = invData;
+        await setDoc(doc(db, CONFIG.COLLECTIONS.ROLES, uid), { role: 'child' });
+        await setDoc(doc(db, CONFIG.COLLECTIONS.USERS, uid), { parentUid }, { merge: true });
+      } else {
+        await setDoc(doc(db, CONFIG.COLLECTIONS.ROLES, uid), { role: 'parent' });
+      }
       showNotification('Registered successfully', 'success');
     } catch (err) {
       handleError(err, 'Failed to register');
@@ -400,10 +413,30 @@ async function initChildDashboard(userId, elements) {
 }
 
 /**
- * Prompts for invite code via modal.
+ * Prompts for invite code via modal or validates provided code.
+ * @param {string|null} code - If provided, validates directly; else, prompts UI.
  * @returns {Promise<{parentUid: string, kidName: string}|null>}
  */
-async function promptForInviteCode() {
+async function promptForInviteCode(code = null) {
+  if (code) {
+    // Validate code directly, same logic as submit.onclick
+    const invRef = doc(db, CONFIG.COLLECTIONS.INVITES, code);
+    const invSnap = await getDoc(invRef);
+    if (invSnap.exists() && !invSnap.data().childUid) {
+      const { parentUid, kidName, expiresAt } = invSnap.data();
+      if (expiresAt.toDate() < new Date()) {
+        showNotification('Invite code expired', 'error');
+        return null;
+      } else {
+        await setDoc(invRef, { childUid: auth.currentUser.uid }, { merge: true });
+        return { parentUid, kidName };
+      }
+    } else {
+      showNotification('Invalid or used invite code', 'error');
+      return null;
+    }
+  }
+  // Existing UI prompt code...
   return new Promise((resolve) => {
     const modal = document.createElement('div');
     modal.className = 'modal';
@@ -801,6 +834,14 @@ function buildBoard() {
   if (userRole === 'parent' && kidSelect) {
     kidSelect.style.display = '';
     controls.appendChild(kidSelect);
+    // Re-bind change handler for kidSelect to switch profiles
+    kidSelect.onchange = () => {
+      store.currentKid = kidSelect.value;
+      data = store.profiles[store.currentKid];
+      store.mastered[store.currentKid] = store.mastered[store.currentKid] || [];
+      saveStore('changeKid');
+      buildBoard();
+    };
   }
 
   // Existing controlConfigs block (invite uses generateInvite directly)
@@ -823,6 +864,10 @@ function buildBoard() {
 
   // Refresh the kidSelect dropdown after controls generation (before displaying email)
   refreshKidSelect();
+  // Set the select's value to the currentKid
+  if (kidSelect) {
+    kidSelect.value = store.currentKid;
+  }
 
   // Display user email
   const emailDisplay = document.createElement('span');
