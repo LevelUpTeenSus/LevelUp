@@ -11,11 +11,10 @@
     }
   }
   </script>
-  <title>LevelUp — Child Dashboard</title>
+  <title>LevelUp — Teen Dashboard</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <!-- Login Modal -->
   <div id="loginModal" class="modal">
     <div class="login-box">
       <input id="emailInput" placeholder="Email" />
@@ -26,27 +25,15 @@
     </div>
   </div>
 
-  <!-- App Header -->
-  <header>
-    <h1>LevelUp</h1>
-  </header>
-
-  <!-- Top bar: Child Name and Progress -->
-  <div class="top-header">
-    <span class="child-name">Child Name</span>
-    <div class="level-section">
-      <div class="progress-bar">
-        <span style="width: 0%"></span>
-      </div>
+  <div id="board">
+    <div id="kidBar" class="kid-bar">
+      <h1>LevelUp</h1>
+  
+      <span id="userEmail"></span>
+      <button id="logoutBtn">Logout</button>
     </div>
   </div>
 
-  <!-- Main Board Container -->
-  <main>
-    <div id="board" class="board"></div>
-  </main>
-
-  <!-- Initialize Child App -->
   <script type="module">
     import { initializeChildApp } from '/script.js';
     initializeChildApp();
