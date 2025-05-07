@@ -725,7 +725,10 @@ import {
     }
     const span = document.createElement('span');
     span.textContent = text;
+    // Allow double-click editing/deletion
     span.ondblclick = () => editModal(li);
+    // Also support double-click directly on the list item
+    li.ondblclick = () => editModal(li);
     li.appendChild(span);
     if (isMobile) {
       const moveBtn = document.createElement('button');
