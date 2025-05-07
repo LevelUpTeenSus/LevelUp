@@ -805,3 +805,37 @@ footer {
   color: transparent !important;
   text-shadow: none !important;
 }
+. 
+/* Login modal box styling */
+#loginModal {
+  display: flex;         /* ensure the flex centering applies */
+  justify-content: center;
+  align-items: center;
+}
+#loginModal .login-box {
+  background-color: #ffffff;
+  padding: 2rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  max-width: 360px;
+  width: 100%;
+}
+/* Full-width inputs and buttons inside the login box */
+#loginModal .login-box input,
+#loginModal .login-box button {
+  width: 100%;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+/* Primary button appearance */
+#loginModal .login-box button.primary {
+  background-color: #3b82f6;
+  color: #fff;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+#loginModal .login-box button.primary:hover {
+  background-color: #2563eb;
+}

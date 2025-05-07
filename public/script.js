@@ -1384,11 +1384,18 @@ async function recordCompletion(text) {
   const childUid = auth.currentUser.uid;
   const today = new Date();
   const date = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  await addDoc(collection(db, CONFIG.COLLECTIONS.CHILD_ACTIVITY), {
-    childUid,
-    responsibility: text,
-    date
-  });
+  // Build YYYY-MM-DD string for key
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  const dateKey = `${yyyy}-${mm}-${dd}`;
+  // Create a deterministic document ID: childUid_responsibility_date
+  const safeResp = text.replace(/\s+/g, '_').replace(/[^\w\-]/g, '');
+  const docId = `${childUid}_${safeResp}_${dateKey}`;
+  await setDoc(
+    doc(db, CONFIG.COLLECTIONS.CHILD_ACTIVITY, docId),
+    { childUid, responsibility: text, date }
+  );
 }
 
 /**
