@@ -188,7 +188,7 @@ import {
             if (!['parent', 'child'].includes(userRole)) {
               throw new Error(`Invalid role: ${userRole}`);
             }
-            if (loginModal) loginModal.style.display = 'none';
+            if (login Clements) loginModal.style.display = 'none';
             if (elements.userEmail) elements.userEmail.textContent = user.email;
   
             if (userRole === 'child') {
@@ -482,6 +482,9 @@ import {
       <p>Next: Tier ${next} (${doneCount}/${nextCount} done)</p>
     `;
     topHeader.appendChild(levelSection);
+    const streakContainer = document.createElement('div');
+    streakContainer.className = 'streak-container';
+    topHeader.appendChild(streakContainer);
     contentArea.appendChild(topHeader);
     const tiersContainer = document.createElement('div');
     tiersContainer.className = 'tiers-container';
@@ -507,7 +510,7 @@ import {
       document.querySelectorAll('.add-btn, .move-btn, button.modify, .undo-btn, .redo-btn').forEach(btn => btn.remove());
       document.querySelectorAll('li span').forEach(span => span.ondblclick = null);
     }
-    loadAllResponsibilityStreaks();
+    loadAllResponsibilityStreaks(streakContainer);
   }
   
   function section(lbl, cat, tierId) {
@@ -548,9 +551,14 @@ import {
         if (userRole === 'child' && cb.checked) {
           recordCompletion(text).catch(err => console.error(err));
         }
-        loadResponsibilityStreakFor(li, text).catch(err => console.error(err));
       };
       li.appendChild(cb);
+      const doneBtn = document.createElement('button');
+      doneBtn.className = 'done-btn';
+      doneBtn.textContent = 'Done Today';
+      doneBtn.setAttribute('aria-label', `Mark ${text} as done for today`);
+      doneBtn.onclick = () => markDoneForDay(li, text);
+      li.appendChild(doneBtn);
     }
     const span = document.createElement('span');
     span.textContent = text;
@@ -592,7 +600,36 @@ import {
     store.mastered[store.currentKid] = Array.from(set);
   }
   
-  async function recordCompletion(text) {
+  async function markDoneForDay(li, text) {
+    try {
+      const childUid = auth.currentUser.uid;
+      const today = new Date();
+      const date = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const yyyy = date.getFullYear();
+      const mm = String(date.getMonth() + 1).padStart(2, '0');
+      const dd = String(date.getDate()).padStart(2, '0');
+      const dateKey = `${yyyy}-${mm}-${dd}`;
+      const safeResp = text.replace(/\s+/g, '_').replace(/[^\w\-]/g, '');
+      const docId = `${childUid}_${safeResp}_${dateKey}`;
+      const docRef = doc(db, CONFIG.COLLECTIONS.CHILD_ACTIVITY, docId);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        showNotification(`${text} already marked done for today`, 'warning');
+        return;
+      }
+      await setDoc(docRef, { childUid, responsibility: text, date });
+      showNotification(`${text} marked as done for today`, 'success');
+      loadResponsibilityStreakFor(li, text);
+      const streakContainer = document.querySelector('.streak-container');
+      if (streakContainer) {
+        loadAllResponsibilityStreaks(streakContainer);
+      }
+    } catch (e) {
+      handleError(e, 'Failed to mark as done');
+    }
+  }
+  
+  async recordCompletion(text) {
     const childUid = auth.currentUser.uid;
     const today = new Date();
     const date = new Date(today.getFullYear(), today.getMonth(), today.getDate());
@@ -636,13 +673,30 @@ import {
       li.appendChild(badge);
     }
     badge.textContent = `🔥 ${streak}d`;
+    return streak;
   }
   
-  function loadAllResponsibilityStreaks() {
-    document.querySelectorAll('li[data-category="responsibilities"]').forEach(li => {
-      const text = li.querySelector('span').textContent.trim();
-      loadResponsibilityStreakFor(li, text).catch(err => console.error(err));
+  async function loadAllResponsibilityStreaks(streakContainer) {
+    const streaks = [];
+    const responsibilities = [];
+    CONFIG.TIER_CONFIG.forEach(tier => {
+      (data[tier.id]?.responsibilities || []).forEach(text => {
+        responsibilities.push(text);
+      });
     });
+    for (const text of responsibilities) {
+      const streak = await loadResponsibilityStreakFor(
+        document.querySelector(`li span:not(.streak-badge)[textContent="${text}"]`)?.parentElement,
+        text
+      );
+      streaks.push({ text, streak });
+    }
+    streakContainer.innerHTML = `
+      <h3>Daily Streaks</h3>
+      <ul class="streak-list">
+        ${streaks.map(s => `<li>${s.text}: ${s.streak} day${s.streak !== 1 ? 's' : ''}</li>`).join('')}
+      </ul>
+    `;
   }
   
   async function loadChildStreak(childUid, elements) {
@@ -663,7 +717,7 @@ import {
       const topHeader = document.querySelector('.top-header');
       const streakEl = document.createElement('div');
       streakEl.className = 'streak-display';
-      streakEl.textContent = `🔥 Current Streak: ${streak} day${streak !== 1 ? 's' : ''}`;
+      streakEl.textContent = `🔥 Overall Streak: ${streak} day${streak !== 1 ? 's' : ''}`;
       topHeader.appendChild(streakEl);
     } catch (e) {
       handleError(e, 'Failed to load streak');
