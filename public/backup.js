@@ -1,13 +1,3 @@
-import {
-  auth,
-  db,
-  CONFIG,
-  showNotification,
-  handleError,
-  validateInput,
-  waitForAuthState
-} from './shared.js';
-
 export async function initializeParentApp() {
   document.addEventListener('DOMContentLoaded', () => {
     initializeApp({ isChild: false });
