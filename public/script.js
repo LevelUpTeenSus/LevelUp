@@ -220,6 +220,34 @@ function initializeApp({ isChild }) {
     }
   }
 
+  // Style login modal as a full-screen, centered overlay
+  if (elements.loginModal) {
+    elements.loginModal.style.position = 'fixed';
+    elements.loginModal.style.top = '0';
+    elements.loginModal.style.left = '0';
+    elements.loginModal.style.width = '100%';
+    elements.loginModal.style.height = '100%';
+    elements.loginModal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+    elements.loginModal.style.display = 'none'; // Start hidden until needed
+    elements.loginModal.style.justifyContent = 'center';
+    elements.loginModal.style.alignItems = 'center';
+    elements.loginModal.style.zIndex = '1000';
+  }
+
+  // Style the edit popup modal similarly
+  if (elements.modal) {
+    elements.modal.style.position = 'fixed';
+    elements.modal.style.top = '0';
+    elements.modal.style.left = '0';
+    elements.modal.style.width = '100%';
+    elements.modal.style.height = '100%';
+    elements.modal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+    elements.modal.style.display = 'none'; // Controlled by show/hide logic
+    elements.modal.style.justifyContent = 'center';
+    elements.modal.style.alignItems = 'center';
+    elements.modal.style.zIndex = '1000';
+  }
+
   elements.board.classList.add('board');
   resetUIElements(elements);
 
