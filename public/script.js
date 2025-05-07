@@ -263,7 +263,11 @@ function initializeApp({ isChild }) {
   const mediaQuery = window.matchMedia('(max-width: 768px)');
   mediaQuery.addEventListener('change', (e) => {
     isMobile = e.matches;
-    buildBoard();
+    if (userRole === 'parent') {
+      buildBoard(elements);
+    } else if (userRole === 'child') {
+      buildBoardChild(elements);
+    }
   });
 
   // Authentication
@@ -298,7 +302,13 @@ function initializeApp({ isChild }) {
         } else {
           await initChildDashboard(user.uid, elements);
         }
-        buildBoard();
+        // Render the appropriate board based on role
+        // buildBoard();
+        if (userRole === 'parent') {
+          buildBoard(elements);
+        } else if (userRole === 'child') {
+          buildBoardChild(elements);
+        }
       } catch (e) {
         handleError(e, 'Failed to initialize dashboard');
         resetUIElements(elements);
