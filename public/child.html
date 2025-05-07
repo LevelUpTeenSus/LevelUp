@@ -15,24 +15,38 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <!-- Login Modal -->
   <div id="loginModal" class="modal">
     <div class="login-box">
-    <input id="emailInput" placeholder="Email" />
-    <input id="passwordInput" placeholder="Password" type="password" />
-    <button id="loginBtn" class="primary">Login</button>
-    <button id="registerBtn" class="primary">Register</button>
-    <button id="googleBtn">Sign in with Google</button>
+      <input id="emailInput" placeholder="Email" />
+      <input id="passwordInput" placeholder="Password" type="password" />
+      <button id="loginBtn" class="primary">Login</button>
+      <button id="registerBtn" class="primary">Register</button>
+      <button id="googleBtn">Sign in with Google</button>
     </div>
   </div>
 
-  <div id="kidBar" class="kid-bar">
+  <!-- App Header -->
+  <header>
     <h1>LevelUp</h1>
-    <span id="userEmail"></span>
-    <button id="logoutBtn">Logout</button>
+  </header>
+
+  <!-- Top bar: Child Name and Progress -->
+  <div class="top-header">
+    <span class="child-name">Child Name</span>
+    <div class="level-section">
+      <div class="progress-bar">
+        <span style="width: 0%"></span>
+      </div>
+    </div>
   </div>
 
-  <div id="board"></div>
+  <!-- Main Board Container -->
+  <main>
+    <div id="board" class="board"></div>
+  </main>
 
+  <!-- Initialize Child App -->
   <script type="module">
     import { initializeChildApp } from '/script.js';
     initializeChildApp();
