@@ -49,6 +49,7 @@ import {
   doc,
   getDoc,
   setDoc,
+  addDoc,
   collection,
   getDocs,
   connectFirestoreEmulator,
@@ -979,6 +980,10 @@ function item(text, category) {
       saveStore('master');
       updateMasteredList();
       updateTier(li.closest('.tier'));
+      if (userRole === 'child' && cb.checked) {
+        recordCompletion(text).catch(err => console.error(err));
+      }
+      loadResponsibilityStreakFor(li, text).catch(err => console.error(err));
     };
     li.appendChild(cb);
   }
@@ -1327,6 +1332,8 @@ function buildBoardChild(elements) {
     document.querySelectorAll('.add-btn, .move-btn, button.modify, .undo-btn, .redo-btn').forEach(btn => btn.remove());
     document.querySelectorAll('li span').forEach(span => span.ondblclick = null);
   }
+  // Initialize streak badges for child view
+  loadAllResponsibilityStreaks();
 }
 
 /**
@@ -1357,4 +1364,64 @@ async function loadChildStreak(childUid, elements) {
   } catch (e) {
     handleError(e, 'Failed to load streak');
   }
+}
+
+/**
+ * Records today's completion for a single responsibility.
+ * @param {string} text
+ */
+async function recordCompletion(text) {
+  const childUid = auth.currentUser.uid;
+  const today = new Date();
+  const date = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  await addDoc(collection(db, CONFIG.COLLECTIONS.CHILD_ACTIVITY), {
+    childUid,
+    responsibility: text,
+    date
+  });
+}
+
+/**
+ * Computes and updates streak badge for one responsibility item.
+ * @param {HTMLLIElement} li
+ * @param {string} text
+ */
+async function loadResponsibilityStreakFor(li, text) {
+  const childUid = auth.currentUser.uid;
+  const snaps = await getDocs(query(
+    collection(db, CONFIG.COLLECTIONS.CHILD_ACTIVITY),
+    where('childUid', '==', childUid),
+    where('responsibility', '==', text),
+    orderBy('date', 'desc')
+  ));
+  let streak = 0;
+  const today = new Date();
+  const expected = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  for (const docSnap of snaps.docs) {
+    const d = docSnap.data().date.toDate();
+    d.setHours(0,0,0,0);
+    if (+d === +expected) {
+      streak++;
+      expected.setDate(expected.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+  let badge = li.querySelector('.streak-badge');
+  if (!badge) {
+    badge = document.createElement('span');
+    badge.className = 'streak-badge';
+    li.appendChild(badge);
+  }
+  badge.textContent = `🔥 ${streak}d`;
+}
+
+/**
+ * Loads streak badges for all visible responsibilities.
+ */
+function loadAllResponsibilityStreaks() {
+  document.querySelectorAll('li[data-category="responsibilities"]').forEach(li => {
+    const text = li.querySelector('span').textContent.trim();
+    loadResponsibilityStreakFor(li, text).catch(err => console.error(err));
+  });
 }
